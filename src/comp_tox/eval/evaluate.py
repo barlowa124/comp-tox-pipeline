@@ -80,6 +80,7 @@ def evaluate(
         cfg = yaml.safe_load(f)
     ad_threshold = cfg["evaluation"]["ad_threshold"]
     n_boot = cfg["evaluation"]["n_bootstrap"]
+    alpha = cfg["evaluation"].get("conformal_alpha", 0.1)
     seed = cfg["split"]["seed"]
 
     bundle = joblib.load(model_path)
@@ -124,11 +125,11 @@ def evaluate(
 
         probs_va = np.column_stack([1 - p_va, p_va])
         probs_te = np.column_stack([1 - p_te, p_te])
-        qhat = conformal_threshold(nonconformity(probs_va, y[va]), alpha=0.1)
+        qhat = conformal_threshold(nonconformity(probs_va, y[va]), alpha=alpha)
         sets = prediction_sets(probs_te, qhat)
         covered = sets[np.arange(te.sum()), y[te]]
         m["conformal"] = {
-            "alpha": 0.1,
+            "alpha": alpha,
             "qhat": qhat,
             "coverage": float(covered.mean()),
             "mean_set_size": float(sets.sum(axis=1).mean()),

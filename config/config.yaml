@@ -22,5 +22,6 @@ model:
 evaluation:
   metrics: ["auroc", "auprc", "ece", "conformal_coverage_90"]
   n_bootstrap: 1000
+  conformal_alpha: 0.1        # miscoverage target -> 90% coverage sets
   ad_method: "tanimoto_nn"    # applicability domain: nearest-neighbor distance
   ad_threshold: 0.3           # TODO: calibrate on validation scaffolds
