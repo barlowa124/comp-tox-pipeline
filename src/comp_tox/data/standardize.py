@@ -44,10 +44,9 @@ def standardize(in_path: str, out_path: str) -> None:
     df = pd.read_parquet(in_path)
 
     if "assay_id" in df.columns:
-        import yaml
+        from comp_tox.util import load_config
 
-        with open("config/config.yaml") as f:
-            expected = yaml.safe_load(f)["endpoint"]["assay_id"]
+        expected = load_config()["endpoint"]["assay_id"]
         assays = set(df["assay_id"].unique())
         if assays != {expected}:
             raise ValueError(

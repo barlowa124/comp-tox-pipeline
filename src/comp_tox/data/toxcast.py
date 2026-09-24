@@ -16,14 +16,10 @@ import urllib.request
 from pathlib import Path
 
 import pandas as pd
-import yaml
+
+from comp_tox.util import load_config
 
 RAW_ARCHIVE = Path("data/raw/tox21.csv.gz")
-
-
-def load_config(path: str = "config/config.yaml") -> dict:
-    with open(path) as f:
-        return yaml.safe_load(f)
 
 
 def download(url: str, dest: Path = RAW_ARCHIVE) -> Path:

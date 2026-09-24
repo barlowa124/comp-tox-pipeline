@@ -16,8 +16,9 @@ import sys
 
 import numpy as np
 import pandas as pd
-import yaml
 from rdkit import Chem
+
+from comp_tox.util import load_config
 from rdkit.Chem import rdFingerprintGenerator
 from scipy import sparse
 
@@ -63,8 +64,7 @@ def build_features(
 
 def main() -> None:
     in_path, npz_out, meta_out = sys.argv[1], sys.argv[2], sys.argv[3]
-    with open("config/config.yaml") as f:
-        fingerprint = yaml.safe_load(f)["model"]["fingerprint"]
+    fingerprint = load_config()["model"]["fingerprint"]
     build_features(in_path, npz_out, meta_out, fingerprint)
 
 

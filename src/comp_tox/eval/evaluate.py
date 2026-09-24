@@ -24,7 +24,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import yaml
 from scipy import sparse
 from sklearn.metrics import average_precision_score, roc_auc_score
 
@@ -35,6 +34,7 @@ from comp_tox.eval.conformal import (
     nonconformity,
     prediction_sets,
 )
+from comp_tox.util import load_config
 
 
 def _metrics_at(y: np.ndarray, p: np.ndarray) -> dict:
@@ -78,8 +78,7 @@ def evaluate(
     metrics_out: str,
     cal_out: str,
 ) -> None:
-    with open("config/config.yaml") as f:
-        cfg = yaml.safe_load(f)
+    cfg = load_config()
     ad_threshold = cfg["evaluation"]["ad_threshold"]
     n_boot = cfg["evaluation"]["n_bootstrap"]
     alpha = cfg["evaluation"].get("conformal_alpha", 0.1)
@@ -152,13 +151,14 @@ def evaluate(
             if (~ad).any()
             else None,
         }
-        return m
+        return m, p_te
 
-    model_metrics = {
-        name: eval_one(model, inputs[name]) for name, model in models.items()
-    }
+    model_metrics, test_probs = {}, {}
+    for name, model in models.items():
+        model_metrics[name], test_probs[name] = eval_one(model, inputs[name])
     metrics = {
         "endpoint": cfg["endpoint"]["assay_id"],
+        "primary_model": primary,
         "counts": {
             "train": int(tr.sum()),
             "valid": int(va.sum()),
@@ -167,9 +167,11 @@ def evaluate(
             "test_prevalence": float(y[te].mean()),
         },
         "models": model_metrics,
+        # headline block duplicates the primary model's metrics for
+        # convenience; "primary_model" records which entry it is
         **model_metrics[primary],
     }
-    p_te = models[primary].predict_proba(X_sel(inputs[primary], te))[:, 1]
+    p_te = test_probs[primary]
 
     # Reliability curve figure
     centers, accs, counts = reliability_curve(y[te], p_te)
