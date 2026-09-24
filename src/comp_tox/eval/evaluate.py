@@ -61,6 +61,8 @@ def _scaffold_bootstrap(
             continue
         aurocs.append(roc_auc_score(y[mask], p[mask]))
         auprcs.append(average_precision_score(y[mask], p[mask]))
+    if not aurocs:
+        return {"auroc_ci95": [None, None], "auprc_ci95": [None, None], "n_boot_used": 0}
     return {
         "auroc_ci95": [float(np.percentile(aurocs, 2.5)), float(np.percentile(aurocs, 97.5))],
         "auprc_ci95": [float(np.percentile(auprcs, 2.5)), float(np.percentile(auprcs, 97.5))],

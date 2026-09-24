@@ -29,7 +29,7 @@ def load_config(path: str = "config/config.yaml") -> dict:
 def download(url: str, dest: Path = RAW_ARCHIVE) -> Path:
     dest.parent.mkdir(parents=True, exist_ok=True)
     if not dest.exists():
-        with urllib.request.urlopen(url) as resp, open(dest, "wb") as out:
+        with urllib.request.urlopen(url, timeout=300) as resp, open(dest, "wb") as out:
             shutil.copyfileobj(resp, out)
     return dest
 
