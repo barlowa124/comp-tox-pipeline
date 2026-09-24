@@ -98,6 +98,20 @@ numbers for this endpoint are typically ~0.8+ and misleading.
 Artifacts: `results/metrics.json`, `results/calibration.png`
 (reliability curve over test scaffolds).
 
+### Framework ports and distributed training
+
+- `src/comp_tox/models/gnn_jax.py` reimplements the GIN in JAX/Flax and
+  verifies it: `parity_check` maps the trained PyTorch weights into the
+  Flax parameter tree and asserts identical logits (<1e-4) on the same
+  graphs. Cross-framework agreement is the evidence the port is correct,
+  not a reimplementation that merely runs.
+- `src/comp_tox/models/gnn_ddp.py` + `ddp_main.py` train the same GIN
+  under `torch.distributed` DDP on the gloo backend — real spawned
+  worker processes, partitioned data, gradient all-reduce, rank-0
+  evaluation. The code path is identical to multi-GPU (nccl); only the
+  backend and scale differ. Verified on CPU; multi-GPU scaling is
+  untested and labeled as such.
+
 ## Limitations
 
 - Predictions are research-grade, not regulatory-grade. No GxP, validation, or
