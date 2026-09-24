@@ -29,3 +29,8 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: long-running tests (e.g. multi-process DDP spawn)",
+]

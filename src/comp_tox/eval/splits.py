@@ -18,6 +18,8 @@ import sys
 import numpy as np
 import pandas as pd
 
+from comp_tox.util import load_config
+
 
 def scaffold_split(
     df: pd.DataFrame,
@@ -54,7 +56,9 @@ def scaffold_split(
         size = int(sizes.loc[g])
         if counts["train"] + size <= frac_train * n or counts["train"] == 0:
             part = "train"
-        elif counts["valid"] + size <= frac_valid * n or counts["valid"] == 0:
+        elif frac_valid > 0 and (
+            counts["valid"] + size <= frac_valid * n or counts["valid"] == 0
+        ):
             part = "valid"
         else:
             part = "test"
@@ -69,7 +73,15 @@ def scaffold_split(
 def main() -> None:
     in_path, out_path = sys.argv[1], sys.argv[2]
     df = pd.read_parquet(in_path)
-    scaffold_split(df).to_parquet(out_path, index=False)
+    s = load_config()["split"]
+    if s.get("method", "scaffold") != "scaffold":
+        raise ValueError(f"unsupported split method: {s['method']!r}")
+    scaffold_split(
+        df,
+        frac_train=s["frac_train"],
+        frac_valid=s["frac_valid"],
+        seed=s["seed"],
+    ).to_parquet(out_path, index=False)
 
 
 if __name__ == "__main__":

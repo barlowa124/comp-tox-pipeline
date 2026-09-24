@@ -18,7 +18,11 @@ def nonconformity(probs: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 def conformal_threshold(scores: np.ndarray, alpha: float = 0.1) -> float:
     """Finite-sample (1-alpha) quantile of calibration scores."""
+    if not (0 < alpha < 1):
+        raise ValueError(f"alpha must be in (0, 1), got {alpha}")
     n = len(scores)
+    if n == 0:
+        raise ValueError("empty calibration set — check split.frac_valid")
     level = min(np.ceil((n + 1) * (1 - alpha)) / n, 1.0)
     return float(np.quantile(scores, level, method="higher"))
 
