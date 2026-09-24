@@ -32,9 +32,12 @@ def canonicalize(smiles: str) -> tuple[str | None, str | None]:
     if not canonical:
         return None, None
     scaff_mol = Chem.MolFromSmiles(canonical)
-    scaffold = (
-        MurckoScaffold.MurckoScaffoldSmiles(mol=scaff_mol) if scaff_mol else ""
-    )
+    if scaff_mol is None:
+        # RDKit can emit a canonical SMILES that fails to re-parse
+        # (kekulization edge cases); downstream stages would drop it
+        # later anyway — drop here so it counts as unparseable.
+        return None, None
+    scaffold = MurckoScaffold.MurckoScaffoldSmiles(mol=scaff_mol)
     if not scaffold:  # acyclic compounds are their own singleton scaffold
         scaffold = f"acyclic:{canonical}"
     return canonical, scaffold
