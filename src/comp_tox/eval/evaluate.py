@@ -82,7 +82,8 @@ def evaluate(
     seed = cfg["split"]["seed"]
 
     bundle = joblib.load(model_path)
-    model = bundle["model"]
+    models = bundle["models"]
+    primary = bundle["primary"]
     df = pd.read_parquet(splits_path)
     X = sparse.load_npz(features_path)
 
@@ -91,10 +92,52 @@ def evaluate(
     te = (df["split"] == "test").to_numpy()
     y = df["label"].to_numpy()
 
-    p_va = model.predict_proba(X[va])[:, 1]
-    p_te = model.predict_proba(X[te])[:, 1]
+    # Applicability domain is model-independent (distance to train set)
+    nn_dist = nn_tanimoto_distances(X[te], X[tr])
+    ad = in_domain(nn_dist, ad_threshold)
 
-    # Headline discrimination metrics
+    def eval_one(model) -> dict:
+        p_va = model.predict_proba(X[va])[:, 1]
+        p_te = model.predict_proba(X[te])[:, 1]
+
+        m = _metrics_at(y[te], p_te)
+        m.update(
+            _scaffold_bootstrap(
+                df[te].reset_index(drop=True), p_te, n_boot, seed
+            )
+        )
+        m["ece"] = expected_calibration_error(y[te], p_te)
+
+        probs_va = np.column_stack([1 - p_va, p_va])
+        probs_te = np.column_stack([1 - p_te, p_te])
+        qhat = conformal_threshold(nonconformity(probs_va, y[va]), alpha=0.1)
+        sets = prediction_sets(probs_te, qhat)
+        covered = sets[np.arange(te.sum()), y[te]]
+        m["conformal"] = {
+            "alpha": 0.1,
+            "qhat": qhat,
+            "coverage": float(covered.mean()),
+            "mean_set_size": float(sets.sum(axis=1).mean()),
+            "singleton_fraction": float((sets.sum(axis=1) == 1).mean()),
+        }
+        m["applicability_domain"] = {
+            "threshold": ad_threshold,
+            "in_domain_fraction": float(ad.mean()),
+            "median_nn_distance": float(np.median(nn_dist)),
+            "in_domain": _metrics_at(y[te][ad], p_te[ad]),
+            "out_domain": _metrics_at(y[te][~ad], p_te[~ad])
+            if (~ad).any()
+            else {},
+            "conformal_coverage_in_domain": float(covered[ad].mean())
+            if ad.any()
+            else None,
+            "conformal_coverage_out_domain": float(covered[~ad].mean())
+            if (~ad).any()
+            else None,
+        }
+        return m
+
+    model_metrics = {name: eval_one(model) for name, model in models.items()}
     metrics = {
         "endpoint": cfg["endpoint"]["assay_id"],
         "counts": {
@@ -104,39 +147,10 @@ def evaluate(
             "test_actives": int(y[te].sum()),
             "test_prevalence": float(y[te].mean()),
         },
-        **_metrics_at(y[te], p_te),
+        "models": model_metrics,
+        **model_metrics[primary],
     }
-    metrics.update(_scaffold_bootstrap(df[te].reset_index(drop=True), p_te, n_boot, seed))
-
-    # Calibration
-    metrics["ece"] = expected_calibration_error(y[te], p_te)
-
-    # Split-conformal: calibrate on valid, evaluate coverage on test
-    probs_va = np.column_stack([1 - p_va, p_va])
-    probs_te = np.column_stack([1 - p_te, p_te])
-    qhat = conformal_threshold(nonconformity(probs_va, y[va]), alpha=0.1)
-    sets = prediction_sets(probs_te, qhat)
-    covered = sets[np.arange(te.sum()), y[te]]
-    metrics["conformal"] = {
-        "alpha": 0.1,
-        "qhat": qhat,
-        "coverage": float(covered.mean()),
-        "mean_set_size": float(sets.sum(axis=1).mean()),
-        "singleton_fraction": float((sets.sum(axis=1) == 1).mean()),
-    }
-
-    # Applicability domain: Tanimoto NN distance to the train set
-    nn_dist = nn_tanimoto_distances(X[te], X[tr])
-    ad = in_domain(nn_dist, ad_threshold)
-    metrics["applicability_domain"] = {
-        "threshold": ad_threshold,
-        "in_domain_fraction": float(ad.mean()),
-        "median_nn_distance": float(np.median(nn_dist)),
-        "in_domain": _metrics_at(y[te][ad], p_te[ad]),
-        "out_domain": _metrics_at(y[te][~ad], p_te[~ad]) if (~ad).any() else {},
-        "conformal_coverage_in_domain": float(covered[ad].mean()) if ad.any() else None,
-        "conformal_coverage_out_domain": float(covered[~ad].mean()) if (~ad).any() else None,
-    }
+    p_te = models[primary].predict_proba(X[te])[:, 1]
 
     # Reliability curve figure
     centers, accs, counts = reliability_curve(y[te], p_te)

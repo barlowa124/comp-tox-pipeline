@@ -6,14 +6,17 @@
   `eval/splits.py`; covered by `tests/test_splits.py`).
 - Partition sizes: 4,872 train / 609 valid / 610 test compounds.
 
-## Metrics (baseline run, logistic regression + Platt calibration)
+## Metrics (baseline run, Morgan fingerprints + Platt calibration)
 
-- AUROC 0.644 (95% CI 0.574–0.719), AUPRC 0.244 (0.159–0.336) — CIs are
-  bootstrap over scaffold groups, not rows.
-- ECE 0.033; reliability curve in `results/calibration.png`.
-- Split-conformal @ 90%: observed coverage 0.930, mean set size 1.04.
-- Applicability domain (Tanimoto NN ≤ 0.3): 17.9% of test in-domain;
-  AUROC 0.751 in-domain vs 0.619 out-domain.
+- Logistic regression: AUROC 0.644 (0.574–0.719), AUPRC 0.244 (0.159–0.336),
+  ECE 0.033, conformal @90% coverage 0.930.
+- Random forest: AUROC 0.726 (0.667–0.787), AUPRC 0.274 (0.199–0.378),
+  ECE 0.044, conformal coverage 0.931.
+- CIs are bootstrap over scaffold groups, not rows. Reliability curve in
+  `results/calibration.png` (primary model).
+- Applicability domain (Tanimoto NN ≤ 0.3): 17.9% of test in-domain.
+  Logreg: AUROC 0.751 in / 0.619 out. **RF inverts: 0.701 in / 0.733 out** —
+  the AD flag is model-dependent and cannot be reported model-agnostically.
 
 ## Known caveats
 

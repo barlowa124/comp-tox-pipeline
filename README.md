@@ -6,8 +6,8 @@ structure, built on public data.
 
 **Status: working baseline.** End-to-end Snakemake DAG runs download →
 standardize → features → scaffold split → train → evaluate on real Tox21 data.
-Model is a deliberately simple baseline (Morgan fingerprints + logistic
-regression + Platt calibration); the evaluation rigor is the point.
+Two models compared on identical splits (logistic regression, random forest —
+Morgan fingerprints + Platt calibration); the evaluation rigor is the point.
 
 ## Problem
 
@@ -54,23 +54,26 @@ See `workflow/Snakefile`.
 ## Results
 
 Scaffold-split evaluation (no scaffold shared between partitions — the honest
-estimate of prospective performance on new chemotypes):
+estimate of prospective performance on new chemotypes). 610 test compounds,
+55 actives (9.0%); bootstrap CIs over scaffold groups:
 
-| Metric | Value |
-|---|---|
-| Test scaffolds / compounds | 610 compounds, 55 actives (9.0%) |
-| AUROC | 0.644 (95% CI 0.574–0.719) |
-| AUPRC | 0.244 (95% CI 0.159–0.336) |
-| ECE | 0.033 |
-| Conformal coverage @ 90% | 0.930 (mean set size 1.04) |
-| In-domain fraction (Tanimoto NN ≤ 0.3) | 17.9% of test |
-| AUROC in-domain / out-domain | **0.751** / 0.619 |
+| Model | AUROC (95% CI) | AUPRC (95% CI) | ECE | Conformal @90% | In-domain AUROC | Out-domain AUROC |
+|---|---|---|---|---|---|---|
+| Logistic regression | 0.644 (0.574–0.719) | 0.244 (0.159–0.336) | 0.033 | 0.930 | **0.751** | 0.619 |
+| Random forest | 0.726 (0.667–0.787) | 0.274 (0.199–0.378) | 0.044 | 0.931 | 0.701 | 0.733 |
 
-The in-domain/out-domain gap is the substantive finding: the model is
-meaningfully better where its applicability domain holds, which is exactly
-why AD flagging is reported rather than a single pooled number. Overall
-AUROC 0.64 is a modest, honest scaffold-split result — random-split numbers
-for this endpoint are typically ~0.8+ and misleading.
+Two findings worth reporting rather than smoothing over:
+
+- **For logistic regression the applicability domain works as intended:**
+  performance is materially better in-domain (0.751 vs 0.619), which is
+  exactly why AD flagging is reported instead of one pooled number.
+- **For random forest it inverts** (0.701 in / 0.733 out) — the Tanimoto
+  nearest-neighbor domain does not discriminate RF performance. Applicability
+  domains are model-dependent, not a property of the dataset alone; any AD
+  claim here is conditioned on the model it was measured with.
+
+Overall AUROC is modest — the honest scaffold-split result. Random-split
+numbers for this endpoint are typically ~0.8+ and misleading.
 
 Artifacts: `results/metrics.json`, `results/calibration.png`
 (reliability curve over test scaffolds).

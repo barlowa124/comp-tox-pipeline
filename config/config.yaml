@@ -15,7 +15,8 @@ split:
   seed: 0
 
 model:
-  type: "logistic_regression" # baseline; TODO compare RF / GP / GNN
+  type: "logistic_regression" # primary; compared models evaluated on identical splits
+  compare: ["random_forest"]
   fingerprint: "morgan-r2-2048"
 
 evaluation:

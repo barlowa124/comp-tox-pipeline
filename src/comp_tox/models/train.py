@@ -1,10 +1,11 @@
-"""Train the endpoint model on the train split; calibrate on validation.
+"""Train the endpoint models on the train split; calibrate on validation.
 
-Baseline: logistic regression on Morgan fingerprints with balanced class
-weights, then Platt (sigmoid) calibration fit on the validation split via
-FrozenEstimator — the calibrator never sees training or test data.
+Baselines: logistic regression and random forest on Morgan fingerprints,
+each Platt-calibrated on the validation split via FrozenEstimator — the
+calibrator never sees training or test data. All configured models are
+trained on identical scaffold splits so comparison is apples-to-apples.
 
-Persisted bundle: calibrated model, base model, config echo, row counts.
+Persisted bundle: {name: calibrated model} dict + metadata.
 """
 
 from __future__ import annotations
@@ -13,13 +14,29 @@ import sys
 
 import joblib
 import pandas as pd
+import yaml
 from scipy import sparse
 from sklearn.calibration import CalibratedClassifierCV
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.frozen import FrozenEstimator
 from sklearn.linear_model import LogisticRegression
 
+MODEL_REGISTRY = {
+    "logistic_regression": lambda seed: LogisticRegression(
+        max_iter=2000, class_weight="balanced", solver="lbfgs"
+    ),
+    "random_forest": lambda seed: RandomForestClassifier(
+        n_estimators=400, class_weight="balanced", n_jobs=-1, random_state=seed
+    ),
+}
+
 
 def train(splits_path: str, features_path: str, out_path: str) -> None:
+    with open("config/config.yaml") as f:
+        cfg = yaml.safe_load(f)
+    seed = cfg["split"]["seed"]
+    names = [cfg["model"]["type"]] + cfg["model"].get("compare", [])
+
     df = pd.read_parquet(splits_path)
     X = sparse.load_npz(features_path)
     y = df["label"].to_numpy()
@@ -27,17 +44,20 @@ def train(splits_path: str, features_path: str, out_path: str) -> None:
     tr = (df["split"] == "train").to_numpy()
     va = (df["split"] == "valid").to_numpy()
 
-    base = LogisticRegression(
-        max_iter=2000, class_weight="balanced", solver="lbfgs"
-    )
-    base.fit(X[tr], y[tr])
-
-    calibrated = CalibratedClassifierCV(FrozenEstimator(base), method="sigmoid")
-    calibrated.fit(X[va], y[va])
+    models = {}
+    for name in dict.fromkeys(names):
+        base = MODEL_REGISTRY[name](seed)
+        base.fit(X[tr], y[tr])
+        calibrated = CalibratedClassifierCV(
+            FrozenEstimator(base), method="sigmoid"
+        )
+        calibrated.fit(X[va], y[va])
+        models[name] = calibrated
+        print(f"trained {name}")
 
     bundle = {
-        "model": calibrated,
-        "base": base,
+        "models": models,
+        "primary": cfg["model"]["type"],
         "train_rows": int(tr.sum()),
         "valid_rows": int(va.sum()),
         "train_actives": int(y[tr].sum()),
@@ -46,7 +66,7 @@ def train(splits_path: str, features_path: str, out_path: str) -> None:
     joblib.dump(bundle, out_path)
     print(
         f"train: {tr.sum()} train / {va.sum()} valid rows "
-        f"({y[tr].sum()} train actives) -> {out_path}"
+        f"({y[tr].sum()} train actives), models={list(models)} -> {out_path}"
     )
 
 

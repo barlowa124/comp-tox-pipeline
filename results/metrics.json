@@ -7,6 +7,80 @@
     "test_actives": 55,
     "test_prevalence": 0.09016393442622951
   },
+  "models": {
+    "logistic_regression": {
+      "auroc": 0.6437018837018836,
+      "auprc": 0.24447370523955186,
+      "auroc_ci95": [
+        0.5740357633190051,
+        0.7192325937383669
+      ],
+      "auprc_ci95": [
+        0.15918125538222724,
+        0.33612115315470753
+      ],
+      "n_boot_used": 1000,
+      "ece": 0.03278688524590165,
+      "conformal": {
+        "alpha": 0.1,
+        "qhat": 0.8321988231486747,
+        "coverage": 0.9295081967213115,
+        "mean_set_size": 1.044262295081967,
+        "singleton_fraction": 0.9557377049180328
+      },
+      "applicability_domain": {
+        "threshold": 0.3,
+        "in_domain_fraction": 0.17868852459016393,
+        "median_nn_distance": 0.5025773195876289,
+        "in_domain": {
+          "auroc": 0.751010101010101,
+          "auprc": 0.3249433336284744
+        },
+        "out_domain": {
+          "auroc": 0.618640350877193,
+          "auprc": 0.23838206778365084
+        },
+        "conformal_coverage_in_domain": 0.9357798165137615,
+        "conformal_coverage_out_domain": 0.9281437125748503
+      }
+    },
+    "random_forest": {
+      "auroc": 0.7261261261261261,
+      "auprc": 0.27399846871754974,
+      "auroc_ci95": [
+        0.6670280758377976,
+        0.7872025141278564
+      ],
+      "auprc_ci95": [
+        0.19890419443410526,
+        0.37785634379353006
+      ],
+      "n_boot_used": 1000,
+      "ece": 0.044480874316939895,
+      "conformal": {
+        "alpha": 0.1,
+        "qhat": 0.8050384583242585,
+        "coverage": 0.9311475409836065,
+        "mean_set_size": 1.044262295081967,
+        "singleton_fraction": 0.9557377049180328
+      },
+      "applicability_domain": {
+        "threshold": 0.3,
+        "in_domain_fraction": 0.17868852459016393,
+        "median_nn_distance": 0.5025773195876289,
+        "in_domain": {
+          "auroc": 0.7005050505050505,
+          "auprc": 0.2855829101913115
+        },
+        "out_domain": {
+          "auroc": 0.7325779727095516,
+          "auprc": 0.3250834393495251
+        },
+        "conformal_coverage_in_domain": 0.944954128440367,
+        "conformal_coverage_out_domain": 0.9281437125748503
+      }
+    }
+  },
   "auroc": 0.6437018837018836,
   "auprc": 0.24447370523955186,
   "auroc_ci95": [
