@@ -2,7 +2,7 @@
 
 Launches `world` real worker processes via `torch.multiprocessing.spawn`,
 each running `comp_tox.models.ddp_main.spawn_worker` with a tcp://
-loopback rendezvous on the gloo backend — separate processes, partitioned
+loopback rendezvous on the gloo backend, with separate processes, partitioned
 data, gradient all-reduce via DistributedDataParallel. The code path is
 identical to multi-GPU (nccl); only the backend and scale differ.
 
@@ -12,7 +12,7 @@ listens on the store socket but no worker processes ever start; Python
 3.13). `comp_tox.models.ddp_main.main` remains usable under torchrun on
 platforms where the agent works.
 
-Verified on CPU — honest label: DDP mechanics demonstrated, multi-GPU
+Verified on CPU. DDP mechanics demonstrated, multi-GPU
 scaling untested.
 """
 

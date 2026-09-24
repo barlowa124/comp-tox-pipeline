@@ -3,7 +3,7 @@
 Nonconformity score: 1 - p(true class). The threshold is calibrated on
 validation compounds and evaluated on held-out test scaffolds. Coverage is
 marginal; it is additionally reported conditioned on the applicability-domain
-flag, where degradation is expected and quantified rather than hidden.
+flag, where degradation is expected and quantified instead of hidden.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ def conformal_threshold(scores: np.ndarray, alpha: float = 0.1) -> float:
         raise ValueError(f"alpha must be in (0, 1), got {alpha}")
     n = len(scores)
     if n == 0:
-        raise ValueError("empty calibration set — check split.frac_valid")
+        raise ValueError("empty calibration set, check split.frac_valid")
     level = min(np.ceil((n + 1) * (1 - alpha)) / n, 1.0)
     return float(np.quantile(scores, level, method="higher"))
 

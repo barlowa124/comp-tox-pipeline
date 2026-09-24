@@ -2,7 +2,7 @@
 
 **Decision: Tox21 NR-ER** (nuclear-receptor estrogen agonism).
 
-Rationale: endocrine disruption is a flagship NAMs use case — in-vitro and
+Rationale: endocrine disruption is a flagship NAMs use case: in-vitro and
 in-silico estrogenicity screening is actively argued to displace animal
 uterotrophic assays. Tox21 labels are fully public (MoleculeNet mirror),
 the ~9% active rate exercises imbalance-aware evaluation, and the dataset
@@ -27,4 +27,4 @@ Original criteria, for the record:
 | ToxCast assay AC50 | invitrodb | TODO | most labels, assay-specific |
 
 Decision: **Tox21 NR-ER** (implemented; revisit if expanding to a second
-endpoint — hERG or a ToxCast AC50 are the natural next candidates)
+endpoint. hERG or a ToxCast AC50 are the natural next candidates)

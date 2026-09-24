@@ -35,7 +35,7 @@ def canonicalize(smiles: str) -> tuple[str | None, str | None]:
     if scaff_mol is None:
         # RDKit can emit a canonical SMILES that fails to re-parse
         # (kekulization edge cases); downstream stages would drop it
-        # later anyway — drop here so it counts as unparseable.
+        # later anyway. Drop here so it counts as unparseable.
         return None, None
     scaffold = MurckoScaffold.MurckoScaffoldSmiles(mol=scaff_mol)
     if not scaffold:  # acyclic compounds are their own singleton scaffold
@@ -54,7 +54,7 @@ def standardize(in_path: str, out_path: str) -> None:
         if assays != {expected}:
             raise ValueError(
                 f"input assays {sorted(assays)} do not match config endpoint "
-                f"{expected!r} — stale intermediate; regenerate raw data"
+                f"{expected!r}, stale intermediate; regenerate raw data"
             )
 
     canon = df["smiles"].map(canonicalize)

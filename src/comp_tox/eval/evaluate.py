@@ -108,7 +108,7 @@ def evaluate(
         return X[mask]
 
     # Applicability domain is measured in fingerprint space; the flag is
-    # data-side — each model is then scored conditioned on it.
+    # data-side. Each model is then scored conditioned on it.
     nn_dist = nn_tanimoto_distances(X[te], X[tr])
     ad = in_domain(nn_dist, ad_threshold)
 
@@ -180,7 +180,7 @@ def evaluate(
     ax.plot(centers, accs, "o-", label="model")
     ax.set_xlabel("predicted probability (bin center)")
     ax.set_ylabel("observed active fraction")
-    ax.set_title(f"Tox21 {cfg['endpoint']['assay_id']} — test scaffolds")
+    ax.set_title(f"Tox21 {cfg['endpoint']['assay_id']} test scaffolds")
     ax.legend()
     fig.tight_layout()
     Path(cal_out).parent.mkdir(parents=True, exist_ok=True)

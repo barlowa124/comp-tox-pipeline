@@ -1,6 +1,6 @@
 """GNN baseline: GIN over molecular graphs, Platt-calibrated on validation.
 
-Small deliberately-baseline architecture: 3x GINConv + global mean pool +
+Small baseline architecture: 3x GINConv + global mean pool +
 linear head. Trained with BCEWithLogitsLoss(pos_weight) for class imbalance;
 Platt scaling is fit on validation logits exactly like the fingerprint
 baselines so comparison is on identical splits and identical calibration.

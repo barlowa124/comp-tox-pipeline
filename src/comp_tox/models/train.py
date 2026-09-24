@@ -1,7 +1,7 @@
 """Train the endpoint models on the train split; calibrate on validation.
 
 Baselines: logistic regression and random forest on Morgan fingerprints,
-each Platt-calibrated on the validation split via FrozenEstimator — the
+each Platt-calibrated on the validation split via FrozenEstimator. The
 calibrator never sees training or test data. All configured models are
 trained on identical scaffold splits so comparison is apples-to-apples.
 

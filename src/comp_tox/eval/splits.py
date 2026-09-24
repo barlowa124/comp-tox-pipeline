@@ -5,8 +5,8 @@ random splits overestimate prospective performance because near-identical
 analogs land in both train and test. Rows sharing a Bemis-Murcko scaffold
 (here, a precomputed ``scaffold_id``) are always kept in the same partition.
 
-Groups are sorted by descending size — the standard DeepChem/MoleculeNet
-convention — so the test set preferentially contains rarer, more structurally
+Groups are sorted by descending size, the standard DeepChem/MoleculeNet
+convention, so the test set preferentially contains rarer, more structurally
 distinct chemotypes. Ties in group size are broken deterministically with a
 seeded shuffle.
 """

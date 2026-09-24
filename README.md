@@ -1,7 +1,7 @@
 # comp-tox-pipeline
 
 Reproducible computational toxicology pipeline predicting **Tox21 NR-ER**
-(estrogen receptor agonism - an endocrine-disruption endpoint) from chemical
+(estrogen receptor agonism, an endocrine-disruption endpoint) from chemical
 structure, built on public data.
 
 **Status: working baseline.** End-to-end Snakemake DAG runs download →
@@ -54,8 +54,8 @@ See `workflow/Snakefile`.
 
 ## Results
 
-Scaffold-split evaluation (no scaffold shared between partitions, so the
-estimate of prospective performance on new chemotypes is honest). 610 test compounds,
+Scaffold-split evaluation, where no scaffold is shared between partitions,
+is the honest estimate of prospective performance on new chemotypes. 610 test compounds,
 55 actives (9.0%). Bootstrap CIs over scaffold groups:
 
 | Model | AUROC (95% CI) | AUPRC (95% CI) | ECE | Conformal @90% | In-domain AUROC | Out-domain AUROC |

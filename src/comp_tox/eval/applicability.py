@@ -2,7 +2,7 @@
 
 A compound is in-domain iff its distance to the nearest training-set
 neighbor (on Morgan fingerprints) is at or below the configured threshold.
-The threshold is calibrated on validation scaffolds — see
+The threshold is calibrated on validation scaffolds, see
 config.evaluation.ad_threshold.
 """
 

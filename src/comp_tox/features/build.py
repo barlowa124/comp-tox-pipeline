@@ -1,6 +1,6 @@
 """Compute Morgan fingerprints and persist them as a sparse matrix.
 
-Primary representation: Morgan (ECFP-style) fingerprints — radius and bit
+Primary representation: Morgan (ECFP-style) fingerprints, radius and bit
 width come from `config.model.fingerprint` ("morgan-r<radius>-<bits>"), a
 strong, interpretable baseline for toxicity endpoints.
 
@@ -31,7 +31,7 @@ def _parse_fingerprint(spec: str) -> tuple[int, int]:
     m = _FINGERPRINT_RE.fullmatch(spec.strip())
     if m is None:
         raise ValueError(
-            f"unsupported fingerprint spec {spec!r} — expected "
+            f"unsupported fingerprint spec {spec!r}, expected "
             "'morgan-r<radius>-<bits>' (e.g. morgan-r2-2048)"
         )
     return int(m.group(1)), int(m.group(2))

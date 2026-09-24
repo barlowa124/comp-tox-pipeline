@@ -1,4 +1,4 @@
-"""JAX/Flax port of the PyTorch GIN baseline — verified, not just claimed.
+"""JAX/Flax port of the PyTorch GIN baseline. Verified, not just claimed.
 
 The Flax module replicates torch_geometric's GINConv math exactly:
     h_i' = MLP(x_i + sum_{j in N(i)} x_j)
@@ -6,7 +6,7 @@ then global mean pool + linear head, identical to models.gnn.GINNet.
 
 `torch_to_flax_params` maps a trained PyTorch state_dict into the Flax
 parameter tree; `parity_check` runs both models on the same graphs and
-returns the max absolute logit difference — cross-framework agreement is
+returns the max absolute logit difference. Cross-framework agreement is
 the evidence that the port is correct.
 """
 

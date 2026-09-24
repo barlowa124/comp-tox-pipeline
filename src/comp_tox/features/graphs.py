@@ -1,10 +1,10 @@
 """Molecular graphs for the GNN baseline.
 
 Each compound -> (x, edge_index, edge_attr) tuple:
-    x:          (n_atoms, 8) float — atomic number/100, degree, formal charge,
+    x:          (n_atoms, 8) float: atomic number/100, degree, formal charge,
                 implicit Hs, aromatic, in-ring, hybridization index, chiral
-    edge_index: (2, n_edges) — both directions
-    edge_attr:  (n_edges, 6) — single/double/triple/aromatic one-hot,
+    edge_index: (2, n_edges), both directions
+    edge_attr:  (n_edges, 6): single/double/triple/aromatic one-hot,
                 conjugated, in-ring
 
 Saved as a pickled list via torch.save, row-aligned with the meta parquet.

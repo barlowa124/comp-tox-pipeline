@@ -1,4 +1,4 @@
-"""DDP worker — launched either by torchrun or by torch.multiprocessing.spawn.
+"""DDP worker, launched either by torchrun or by torch.multiprocessing.spawn.
 
 Reads graphs + labels from a torch.save file, trains the GIN under
 DistributedDataParallel on the gloo backend, and has rank 0 write
@@ -145,7 +145,7 @@ def spawn_worker(
     seed: int,
     port: int,
 ) -> None:
-    """torch.multiprocessing.spawn entry — tcp:// rendezvous on loopback."""
+    """torch.multiprocessing.spawn entry, tcp:// rendezvous on loopback."""
     import torch.distributed as dist
 
     os.environ["RANK"] = str(rank)
