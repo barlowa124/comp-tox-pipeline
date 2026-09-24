@@ -1,0 +1,62 @@
+configfile: "config/config.yaml"
+
+
+rule all:
+    input:
+        "results/metrics.json",
+        "results/calibration.png",
+
+
+rule download:
+    output:
+        "data/raw/assay.parquet",
+    shell:
+        "python -m comp_tox.data.toxcast --output {output}"
+
+
+rule standardize:
+    input:
+        "data/raw/assay.parquet",
+    output:
+        "data/processed/compounds.parquet",
+    shell:
+        "python -m comp_tox.data.standardize {input} {output}"
+
+
+rule features:
+    input:
+        "data/processed/compounds.parquet",
+    output:
+        "data/processed/features.parquet",
+    shell:
+        "python -m comp_tox.features.build {input} {output}"
+
+
+rule split:
+    input:
+        "data/processed/features.parquet",
+    output:
+        "data/processed/splits.parquet",
+    shell:
+        "python -m comp_tox.eval.splits {input} {output}"
+
+
+rule train:
+    input:
+        "data/processed/splits.parquet",
+    output:
+        "results/model.joblib",
+    shell:
+        "python -m comp_tox.models.train {input} {output}"
+
+
+rule evaluate:
+    input:
+        model="results/model.joblib",
+        data="data/processed/splits.parquet",
+    output:
+        metrics="results/metrics.json",
+        calibration="results/calibration.png",
+    shell:
+        "python -m comp_tox.eval.evaluate {input.model} {input.data}"
+        " --metrics {output.metrics} --calibration {output.calibration}"

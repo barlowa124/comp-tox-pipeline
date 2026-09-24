@@ -1,0 +1,24 @@
+endpoint:
+  name: "tox21-todo"          # TODO: finalize per docs/endpoint-selection.md
+  source: "tox21"             # tox21 | toxcast | pubchem | chembl
+  assay_id: null              # TODO: specific assay / AC50 identifier
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+
+split:
+  method: "scaffold"          # never report random-split numbers as headline
+  frac_train: 0.8
+  frac_valid: 0.1
+  seed: 0
+
+model:
+  type: "logistic_regression" # baseline; TODO compare RF / GP / GNN
+  fingerprint: "morgan-r2-2048"
+
+evaluation:
+  metrics: ["auroc", "auprc", "ece", "conformal_coverage_90"]
+  n_bootstrap: 1000
+  ad_method: "tanimoto_nn"    # applicability domain: nearest-neighbor distance
+  ad_threshold: 0.3           # TODO: calibrate on validation scaffolds
