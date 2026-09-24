@@ -31,7 +31,9 @@ MODEL_REGISTRY = {
 }
 
 
-def train(splits_path: str, features_path: str, out_path: str) -> None:
+def train(
+    splits_path: str, features_path: str, graphs_path: str, out_path: str
+) -> None:
     with open("config/config.yaml") as f:
         cfg = yaml.safe_load(f)
     seed = cfg["split"]["seed"]
@@ -44,19 +46,30 @@ def train(splits_path: str, features_path: str, out_path: str) -> None:
     tr = (df["split"] == "train").to_numpy()
     va = (df["split"] == "valid").to_numpy()
 
-    models = {}
+    models, inputs = {}, {}
     for name in dict.fromkeys(names):
-        base = MODEL_REGISTRY[name](seed)
-        base.fit(X[tr], y[tr])
-        calibrated = CalibratedClassifierCV(
-            FrozenEstimator(base), method="sigmoid"
-        )
-        calibrated.fit(X[va], y[va])
-        models[name] = calibrated
+        if name == "gnn":
+            import torch
+
+            from comp_tox.models.gnn import train_gnn
+
+            graphs = torch.load(graphs_path, weights_only=False)
+            models[name] = train_gnn(graphs, df, tr, va, seed)
+            inputs[name] = "graphs"
+        else:
+            base = MODEL_REGISTRY[name](seed)
+            base.fit(X[tr], y[tr])
+            calibrated = CalibratedClassifierCV(
+                FrozenEstimator(base), method="sigmoid"
+            )
+            calibrated.fit(X[va], y[va])
+            models[name] = calibrated
+            inputs[name] = "npz"
         print(f"trained {name}")
 
     bundle = {
         "models": models,
+        "inputs": inputs,
         "primary": cfg["model"]["type"],
         "train_rows": int(tr.sum()),
         "valid_rows": int(va.sum()),
@@ -71,8 +84,8 @@ def train(splits_path: str, features_path: str, out_path: str) -> None:
 
 
 def main() -> None:
-    splits_path, features_path, out_path = sys.argv[1], sys.argv[2], sys.argv[3]
-    train(splits_path, features_path, out_path)
+    splits_path, features_path, graphs_path, out_path = sys.argv[1:5]
+    train(splits_path, features_path, graphs_path, out_path)
 
 
 if __name__ == "__main__":

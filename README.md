@@ -6,8 +6,9 @@ structure, built on public data.
 
 **Status: working baseline.** End-to-end Snakemake DAG runs download →
 standardize → features → scaffold split → train → evaluate on real Tox21 data.
-Two models compared on identical splits (logistic regression, random forest —
-Morgan fingerprints + Platt calibration); the evaluation rigor is the point.
+Three models compared on identical splits (logistic regression and random
+forest on Morgan fingerprints, a GIN graph network — all Platt-calibrated on
+validation scaffolds); the evaluation rigor is the point.
 
 ## Problem
 
@@ -59,18 +60,20 @@ estimate of prospective performance on new chemotypes). 610 test compounds,
 
 | Model | AUROC (95% CI) | AUPRC (95% CI) | ECE | Conformal @90% | In-domain AUROC | Out-domain AUROC |
 |---|---|---|---|---|---|---|
-| Logistic regression | 0.644 (0.574–0.719) | 0.244 (0.159–0.336) | 0.033 | 0.930 | **0.751** | 0.619 |
-| Random forest | 0.726 (0.667–0.787) | 0.274 (0.199–0.378) | 0.044 | 0.931 | 0.701 | 0.733 |
+| Logistic regression (fingerprints) | 0.644 (0.574–0.719) | 0.244 (0.159–0.336) | 0.033 | 0.930 | **0.751** | 0.619 |
+| Random forest (fingerprints) | 0.726 (0.667–0.787) | 0.274 (0.199–0.378) | 0.044 | 0.931 | 0.701 | 0.733 |
+| GIN graph network | 0.666 (see metrics.json) | 0.249 | 0.040 | 0.934 | 0.507 | 0.704 |
 
 Two findings worth reporting rather than smoothing over:
 
 - **For logistic regression the applicability domain works as intended:**
   performance is materially better in-domain (0.751 vs 0.619), which is
   exactly why AD flagging is reported instead of one pooled number.
-- **For random forest it inverts** (0.701 in / 0.733 out) — the Tanimoto
-  nearest-neighbor domain does not discriminate RF performance. Applicability
-  domains are model-dependent, not a property of the dataset alone; any AD
-  claim here is conditioned on the model it was measured with.
+- **For random forest and the GNN it inverts** (RF: 0.701 in / 0.733 out;
+  GNN: 0.507 in / 0.704 out) — the Tanimoto nearest-neighbor domain does
+  not discriminate their performance. Applicability domains are
+  model-dependent, not a property of the dataset alone; any AD claim here
+  is conditioned on the model it was measured with.
 
 Overall AUROC is modest — the honest scaffold-split result. Random-split
 numbers for this endpoint are typically ~0.8+ and misleading.

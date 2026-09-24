@@ -72,6 +72,7 @@ def evaluate(
     model_path: str,
     splits_path: str,
     features_path: str,
+    graphs_path: str,
     metrics_out: str,
     cal_out: str,
 ) -> None:
@@ -83,6 +84,7 @@ def evaluate(
 
     bundle = joblib.load(model_path)
     models = bundle["models"]
+    inputs = bundle["inputs"]
     primary = bundle["primary"]
     df = pd.read_parquet(splits_path)
     X = sparse.load_npz(features_path)
@@ -92,13 +94,25 @@ def evaluate(
     te = (df["split"] == "test").to_numpy()
     y = df["label"].to_numpy()
 
-    # Applicability domain is model-independent (distance to train set)
+    graphs = None
+    if "graphs" in inputs.values():
+        import torch
+
+        graphs = torch.load(graphs_path, weights_only=False)
+
+    def X_sel(kind: str, mask: np.ndarray):
+        if kind == "graphs":
+            return [graphs[i] for i in np.where(mask)[0]]
+        return X[mask]
+
+    # Applicability domain is measured in fingerprint space; the flag is
+    # data-side — each model is then scored conditioned on it.
     nn_dist = nn_tanimoto_distances(X[te], X[tr])
     ad = in_domain(nn_dist, ad_threshold)
 
-    def eval_one(model) -> dict:
-        p_va = model.predict_proba(X[va])[:, 1]
-        p_te = model.predict_proba(X[te])[:, 1]
+    def eval_one(model, kind: str) -> dict:
+        p_va = model.predict_proba(X_sel(kind, va))[:, 1]
+        p_te = model.predict_proba(X_sel(kind, te))[:, 1]
 
         m = _metrics_at(y[te], p_te)
         m.update(
@@ -137,7 +151,9 @@ def evaluate(
         }
         return m
 
-    model_metrics = {name: eval_one(model) for name, model in models.items()}
+    model_metrics = {
+        name: eval_one(model, inputs[name]) for name, model in models.items()
+    }
     metrics = {
         "endpoint": cfg["endpoint"]["assay_id"],
         "counts": {
@@ -150,7 +166,7 @@ def evaluate(
         "models": model_metrics,
         **model_metrics[primary],
     }
-    p_te = models[primary].predict_proba(X[te])[:, 1]
+    p_te = models[primary].predict_proba(X_sel(inputs[primary], te))[:, 1]
 
     # Reliability curve figure
     centers, accs, counts = reliability_curve(y[te], p_te)
@@ -177,10 +193,18 @@ def main() -> None:
     parser.add_argument("model")
     parser.add_argument("splits")
     parser.add_argument("features")
+    parser.add_argument("graphs")
     parser.add_argument("--metrics", required=True)
     parser.add_argument("--calibration", required=True)
     args = parser.parse_args()
-    evaluate(args.model, args.splits, args.features, args.metrics, args.calibration)
+    evaluate(
+        args.model,
+        args.splits,
+        args.features,
+        args.graphs,
+        args.metrics,
+        args.calibration,
+    )
 
 
 if __name__ == "__main__":

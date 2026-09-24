@@ -37,6 +37,15 @@ rule features:
         "{PY} -m comp_tox.features.build {input} {output.npz} {output.meta}"
 
 
+rule graphs:
+    input:
+        "data/processed/features_meta.parquet",
+    output:
+        "data/processed/graphs.pt",
+    shell:
+        "{PY} -m comp_tox.features.graphs {input} {output}"
+
+
 rule split:
     input:
         "data/processed/features_meta.parquet",
@@ -50,10 +59,11 @@ rule train:
     input:
         splits="data/processed/splits.parquet",
         features="data/processed/features.npz",
+        graphs="data/processed/graphs.pt",
     output:
         "results/model.joblib",
     shell:
-        "{PY} -m comp_tox.models.train {input.splits} {input.features} {output}"
+        "{PY} -m comp_tox.models.train {input.splits} {input.features} {input.graphs} {output}"
 
 
 rule evaluate:
@@ -61,9 +71,10 @@ rule evaluate:
         model="results/model.joblib",
         splits="data/processed/splits.parquet",
         features="data/processed/features.npz",
+        graphs="data/processed/graphs.pt",
     output:
         metrics="results/metrics.json",
         calibration="results/calibration.png",
     shell:
         "{PY} -m comp_tox.eval.evaluate {input.model} {input.splits} {input.features}"
-        " --metrics {output.metrics} --calibration {output.calibration}"
+        " {input.graphs} --metrics {output.metrics} --calibration {output.calibration}"

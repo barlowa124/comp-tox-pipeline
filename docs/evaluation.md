@@ -12,11 +12,14 @@
   ECE 0.033, conformal @90% coverage 0.930.
 - Random forest: AUROC 0.726 (0.667–0.787), AUPRC 0.274 (0.199–0.378),
   ECE 0.044, conformal coverage 0.931.
+- GIN (3-layer, graphs): AUROC 0.666, AUPRC 0.249, ECE 0.040, coverage 0.934.
+  Untuned architecture — the point is the comparison protocol, not the score.
 - CIs are bootstrap over scaffold groups, not rows. Reliability curve in
   `results/calibration.png` (primary model).
 - Applicability domain (Tanimoto NN ≤ 0.3): 17.9% of test in-domain.
-  Logreg: AUROC 0.751 in / 0.619 out. **RF inverts: 0.701 in / 0.733 out** —
-  the AD flag is model-dependent and cannot be reported model-agnostically.
+  Logreg: AUROC 0.751 in / 0.619 out. **RF and GNN invert**: RF 0.701 in /
+  0.733 out; GNN 0.507 in / 0.704 out — the AD flag is model-dependent and
+  cannot be reported model-agnostically.
 
 ## Known caveats
 

@@ -79,6 +79,42 @@
         "conformal_coverage_in_domain": 0.944954128440367,
         "conformal_coverage_out_domain": 0.9281437125748503
       }
+    },
+    "gnn": {
+      "auroc": 0.6656511056511056,
+      "auprc": 0.2487100767515471,
+      "auroc_ci95": [
+        0.5950407658875347,
+        0.7429245564913658
+      ],
+      "auprc_ci95": [
+        0.17260323983699485,
+        0.3442904917341931
+      ],
+      "n_boot_used": 1000,
+      "ece": 0.040327868852459016,
+      "conformal": {
+        "alpha": 0.1,
+        "qhat": 0.8147866129875183,
+        "coverage": 0.9344262295081968,
+        "mean_set_size": 1.0721311475409836,
+        "singleton_fraction": 0.9278688524590164
+      },
+      "applicability_domain": {
+        "threshold": 0.3,
+        "in_domain_fraction": 0.17868852459016393,
+        "median_nn_distance": 0.5025773195876289,
+        "in_domain": {
+          "auroc": 0.507070707070707,
+          "auprc": 0.2540817143842746
+        },
+        "out_domain": {
+          "auroc": 0.7042884990253411,
+          "auprc": 0.2639767289334404
+        },
+        "conformal_coverage_in_domain": 0.926605504587156,
+        "conformal_coverage_out_domain": 0.936127744510978
+      }
     }
   },
   "auroc": 0.6437018837018836,
