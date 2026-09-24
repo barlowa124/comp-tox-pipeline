@@ -1,31 +1,63 @@
-"""Download endpoint data from public tox data sources.
+"""Download the configured Tox21 endpoint from the public MoleculeNet mirror.
 
-TODO: implement download of the configured endpoint's assay data.
+Tox21 (2014 challenge): ~12k compounds screened across 12 nuclear-receptor
+and stress-response assays by NIH/EPA/FDA. The consolidated CSV is mirrored
+publicly by DeepChem/MoleculeNet; we extract the configured endpoint column.
 
-ToxCast/Tox21: EPA publishes invitrodb bulk releases; pull the assay table for
-the configured assay_id, join to compound identifiers (DSSTox ID / CASRN /
-SMILES). Alternative: Tox21 aggregated activity calls from PubChem.
-
-Output schema (data/raw/assay.parquet):
-    compound_id, smiles, label (or ac50), assay_id, source
-
-Cache everything under data/raw/; never re-download inside a pipeline run.
+Raw archive is cached under data/raw/ (gitignored); the stage output is a
+compact parquet of just the endpoint's labels.
 """
 
 from __future__ import annotations
 
 import argparse
+import shutil
+import urllib.request
+from pathlib import Path
+
+import pandas as pd
+import yaml
+
+RAW_ARCHIVE = Path("data/raw/tox21.csv.gz")
 
 
-def download(endpoint: str, assay_id: str | None, out_path: str) -> None:
-    raise NotImplementedError("TODO: implement endpoint download")
+def load_config(path: str = "config/config.yaml") -> dict:
+    with open(path) as f:
+        return yaml.safe_load(f)
+
+
+def download(url: str, dest: Path = RAW_ARCHIVE) -> Path:
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if not dest.exists():
+        with urllib.request.urlopen(url) as resp, open(dest, "wb") as out:
+            shutil.copyfileobj(resp, out)
+    return dest
+
+
+def extract_endpoint(archive: Path, assay_id: str) -> pd.DataFrame:
+    df = pd.read_csv(archive, usecols=["mol_id", "smiles", assay_id])
+    df = df.rename(columns={assay_id: "label", "mol_id": "compound_id"})
+    df = df.dropna(subset=["label"]).copy()
+    df["label"] = df["label"].astype(int)
+    df["assay_id"] = assay_id
+    df["source"] = "tox21"
+    return df[["compound_id", "smiles", "label", "assay_id", "source"]]
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
-    raise NotImplementedError("TODO: wire download() to config")
+
+    cfg = load_config()["endpoint"]
+    archive = download(cfg["url"])
+    df = extract_endpoint(archive, cfg["assay_id"])
+    Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+    df.to_parquet(args.output, index=False)
+    print(
+        f"{cfg['assay_id']}: {len(df)} labeled compounds "
+        f"({int(df['label'].sum())} actives, {df['label'].mean():.1%})"
+    )
 
 
 if __name__ == "__main__":

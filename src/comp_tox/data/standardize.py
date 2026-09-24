@@ -1,25 +1,68 @@
-"""Standardize chemical structures and aggregate labels.
+"""Standardize chemical structures and assign scaffold IDs.
 
-TODO: implement with rdkit:
-
-- Parse SMILES, drop unparseable rows (log count, never silently)
-- Strip salts/solvents, neutralize, canonicalize tautomer
-- Emit canonical isomeric SMILES + Bemis-Murcko scaffold ID
-- Dedup by canonical SMILES; reconcile conflicting labels explicitly
-  (document the reconciliation rule — e.g., any-active wins, majority, or
-  drop-conflicting — and record counts)
+Steps:
+    - Parse SMILES; unparseable rows are dropped and counted (never silently)
+    - Strip salts/solvents and neutralize via rdMolStandardize.FragmentParent
+    - Emit canonical isomeric SMILES + Bemis-Murcko scaffold SMILES
+    - Dedup by canonical SMILES; groups with conflicting labels are dropped
+      and counted (Tox21 has one call per compound, so this is a guard)
 
 Output schema (data/processed/compounds.parquet):
-    compound_id, canonical_smiles, scaffold_id, label, label_confidence
+    compound_id, canonical_smiles, scaffold_id, label
 """
 
 from __future__ import annotations
 
 import sys
 
+import pandas as pd
+from rdkit import Chem, RDLogger
+from rdkit.Chem.MolStandardize import rdMolStandardize
+from rdkit.Chem.Scaffolds import MurckoScaffold
+
+RDLogger.DisableLog("rdApp.*")
+
+
+def canonicalize(smiles: str) -> tuple[str | None, str | None]:
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        return None, None
+    parent = rdMolStandardize.FragmentParent(mol)
+    canonical = Chem.MolToSmiles(parent, isomericSmiles=True) if parent else ""
+    if not canonical:
+        return None, None
+    scaff_mol = Chem.MolFromSmiles(canonical)
+    scaffold = (
+        MurckoScaffold.MurckoScaffoldSmiles(mol=scaff_mol) if scaff_mol else ""
+    )
+    if not scaffold:  # acyclic compounds are their own singleton scaffold
+        scaffold = f"acyclic:{canonical}"
+    return canonical, scaffold
+
 
 def standardize(in_path: str, out_path: str) -> None:
-    raise NotImplementedError("TODO: implement structure standardization")
+    df = pd.read_parquet(in_path)
+
+    canon = df["smiles"].map(canonicalize)
+    df["canonical_smiles"] = [c for c, _ in canon]
+    df["scaffold_id"] = [s for _, s in canon]
+    n_unparseable = int(df["canonical_smiles"].isna().sum())
+    df = df.dropna(subset=["canonical_smiles"])
+
+    label_sets = df.groupby("canonical_smiles")["label"].nunique()
+    conflicting = set(label_sets[label_sets > 1].index)
+    n_conflicting = len(conflicting)
+    df = df[~df["canonical_smiles"].isin(conflicting)]
+    df = df.drop_duplicates(subset=["canonical_smiles"]).reset_index(drop=True)
+
+    df[["compound_id", "canonical_smiles", "scaffold_id", "label"]].to_parquet(
+        out_path, index=False
+    )
+    print(
+        f"standardize: {len(df)} compounds kept; "
+        f"{n_unparseable} unparseable dropped; "
+        f"{n_conflicting} conflicting-label structures dropped"
+    )
 
 
 def main() -> None:

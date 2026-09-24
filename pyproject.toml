@@ -10,17 +10,19 @@ requires-python = ">=3.10"
 dependencies = [
     "numpy",
     "pandas",
+    "pyarrow",
     "scikit-learn",
+    "scipy",
     "pyyaml",
     "matplotlib",
     "joblib",
+    "rdkit>=2024.3",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest",
     "snakemake>=8",
-    "rdkit>=2024.3",
 ]
 
 [tool.setuptools.packages.find]

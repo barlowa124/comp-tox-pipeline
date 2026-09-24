@@ -1,14 +1,9 @@
 """Split-conformal prediction sets for the tox endpoint.
 
-TODO: implement
-
-- Nonconformity score: 1 - p(true class) for classification
-- Quantile calibrated on *validation scaffolds* (group-level: one score per
-  scaffold or per compound — document the choice; per-scaffold is the more
-  conservative unit given scaffold exchangeability assumptions)
-- Report marginal coverage on test scaffolds; target 90%
-- Also report coverage conditioned on applicability-domain flag — coverage
-  degradation out-of-domain is expected and should be quantified, not hidden
+Nonconformity score: 1 - p(true class). The threshold is calibrated on
+validation compounds and evaluated on held-out test scaffolds. Coverage is
+marginal; it is additionally reported conditioned on the applicability-domain
+flag, where degradation is expected and quantified rather than hidden.
 """
 
 from __future__ import annotations
@@ -16,6 +11,18 @@ from __future__ import annotations
 import numpy as np
 
 
+def nonconformity(probs: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """1 - predicted probability of the true class. probs is (n, 2)."""
+    return 1.0 - probs[np.arange(len(y)), y]
+
+
 def conformal_threshold(scores: np.ndarray, alpha: float = 0.1) -> float:
-    """Return the (1-alpha) conformal quantile of calibration scores."""
-    raise NotImplementedError("TODO: implement conformal threshold")
+    """Finite-sample (1-alpha) quantile of calibration scores."""
+    n = len(scores)
+    level = min(np.ceil((n + 1) * (1 - alpha)) / n, 1.0)
+    return float(np.quantile(scores, level, method="higher"))
+
+
+def prediction_sets(probs: np.ndarray, qhat: float) -> np.ndarray:
+    """Boolean (n, 2) set membership: classes whose score clears qhat."""
+    return probs >= (1.0 - qhat)

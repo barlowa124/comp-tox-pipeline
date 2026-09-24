@@ -1,7 +1,8 @@
 endpoint:
-  name: "tox21-todo"          # TODO: finalize per docs/endpoint-selection.md
+  name: "tox21-nr-er"
   source: "tox21"             # tox21 | toxcast | pubchem | chembl
-  assay_id: null              # TODO: specific assay / AC50 identifier
+  assay_id: "NR-ER"           # Tox21 nuclear-receptor estrogen agonism
+  url: "https://deepchemdata.s3-us-west-1.amazonaws.com/datasets/tox21.csv.gz"
 
 data:
   raw_dir: "data/raw"

@@ -6,8 +6,10 @@ __pycache__/
 .ipynb_checkpoints/
 .snakemake/
 
-# data and results are generated, not committed (except .gitkeep)
+# data and results are generated, not committed — except compact artifacts
 data/raw/*
 data/processed/*
 results/*
 !**/.gitkeep
+!results/metrics.json
+!results/calibration.png

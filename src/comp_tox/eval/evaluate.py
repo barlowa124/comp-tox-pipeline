@@ -2,36 +2,171 @@
 
 Orchestrates the eval submodules (test split only):
     - eval.calibration: ECE + reliability curve -> results/calibration.png
-    - eval.conformal: split-conformal coverage at 90%, calibration on
-      validation scaffolds
-    - eval.applicability: Tanimoto NN distance to train set; report metrics
+    - eval.conformal: split-conformal coverage at 90%, calibrated on the
+      validation split
+    - eval.applicability: Tanimoto NN distance to train set; metrics reported
       conditioned on in/out of domain
     - AUROC, AUPRC (report both; imbalance makes AUPRC the honest one)
 
 All metrics get bootstrap CIs over scaffold groups (not over rows).
-
-Outputs:
-    results/metrics.json
-    results/calibration.png
 """
 
 from __future__ import annotations
 
 import argparse
+import json
+from pathlib import Path
+
+import joblib
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import yaml
+from scipy import sparse
+from sklearn.metrics import average_precision_score, roc_auc_score
+
+from comp_tox.eval.applicability import in_domain, nn_tanimoto_distances
+from comp_tox.eval.calibration import expected_calibration_error, reliability_curve
+from comp_tox.eval.conformal import (
+    conformal_threshold,
+    nonconformity,
+    prediction_sets,
+)
 
 
-def evaluate(model_path: str, data_path: str, metrics_out: str, cal_out: str) -> None:
-    raise NotImplementedError("TODO: implement evaluation")
+def _metrics_at(y: np.ndarray, p: np.ndarray) -> dict:
+    out = {}
+    if len(np.unique(y)) > 1:
+        out["auroc"] = float(roc_auc_score(y, p))
+        out["auprc"] = float(average_precision_score(y, p))
+    return out
+
+
+def _scaffold_bootstrap(
+    df: pd.DataFrame, p: np.ndarray, n_boot: int, seed: int
+) -> dict:
+    """CIs by resampling scaffold groups, preserving group structure."""
+    groups = df["scaffold_id"].to_numpy()
+    uniq, inv = np.unique(groups, return_inverse=True)
+    y = df["label"].to_numpy()
+    rng = np.random.default_rng(seed)
+    aurocs, auprcs = [], []
+    for _ in range(n_boot):
+        draw = rng.choice(len(uniq), size=len(uniq), replace=True)
+        mask = np.isin(inv, draw)
+        if len(np.unique(y[mask])) < 2:
+            continue
+        aurocs.append(roc_auc_score(y[mask], p[mask]))
+        auprcs.append(average_precision_score(y[mask], p[mask]))
+    return {
+        "auroc_ci95": [float(np.percentile(aurocs, 2.5)), float(np.percentile(aurocs, 97.5))],
+        "auprc_ci95": [float(np.percentile(auprcs, 2.5)), float(np.percentile(auprcs, 97.5))],
+        "n_boot_used": len(aurocs),
+    }
+
+
+def evaluate(
+    model_path: str,
+    splits_path: str,
+    features_path: str,
+    metrics_out: str,
+    cal_out: str,
+) -> None:
+    with open("config/config.yaml") as f:
+        cfg = yaml.safe_load(f)
+    ad_threshold = cfg["evaluation"]["ad_threshold"]
+    n_boot = cfg["evaluation"]["n_bootstrap"]
+    seed = cfg["split"]["seed"]
+
+    bundle = joblib.load(model_path)
+    model = bundle["model"]
+    df = pd.read_parquet(splits_path)
+    X = sparse.load_npz(features_path)
+
+    tr = (df["split"] == "train").to_numpy()
+    va = (df["split"] == "valid").to_numpy()
+    te = (df["split"] == "test").to_numpy()
+    y = df["label"].to_numpy()
+
+    p_va = model.predict_proba(X[va])[:, 1]
+    p_te = model.predict_proba(X[te])[:, 1]
+
+    # Headline discrimination metrics
+    metrics = {
+        "endpoint": cfg["endpoint"]["assay_id"],
+        "counts": {
+            "train": int(tr.sum()),
+            "valid": int(va.sum()),
+            "test": int(te.sum()),
+            "test_actives": int(y[te].sum()),
+            "test_prevalence": float(y[te].mean()),
+        },
+        **_metrics_at(y[te], p_te),
+    }
+    metrics.update(_scaffold_bootstrap(df[te].reset_index(drop=True), p_te, n_boot, seed))
+
+    # Calibration
+    metrics["ece"] = expected_calibration_error(y[te], p_te)
+
+    # Split-conformal: calibrate on valid, evaluate coverage on test
+    probs_va = np.column_stack([1 - p_va, p_va])
+    probs_te = np.column_stack([1 - p_te, p_te])
+    qhat = conformal_threshold(nonconformity(probs_va, y[va]), alpha=0.1)
+    sets = prediction_sets(probs_te, qhat)
+    covered = sets[np.arange(te.sum()), y[te]]
+    metrics["conformal"] = {
+        "alpha": 0.1,
+        "qhat": qhat,
+        "coverage": float(covered.mean()),
+        "mean_set_size": float(sets.sum(axis=1).mean()),
+        "singleton_fraction": float((sets.sum(axis=1) == 1).mean()),
+    }
+
+    # Applicability domain: Tanimoto NN distance to the train set
+    nn_dist = nn_tanimoto_distances(X[te], X[tr])
+    ad = in_domain(nn_dist, ad_threshold)
+    metrics["applicability_domain"] = {
+        "threshold": ad_threshold,
+        "in_domain_fraction": float(ad.mean()),
+        "median_nn_distance": float(np.median(nn_dist)),
+        "in_domain": _metrics_at(y[te][ad], p_te[ad]),
+        "out_domain": _metrics_at(y[te][~ad], p_te[~ad]) if (~ad).any() else {},
+        "conformal_coverage_in_domain": float(covered[ad].mean()) if ad.any() else None,
+        "conformal_coverage_out_domain": float(covered[~ad].mean()) if (~ad).any() else None,
+    }
+
+    # Reliability curve figure
+    centers, accs, counts = reliability_curve(y[te], p_te)
+    fig, ax = plt.subplots(figsize=(4.5, 4))
+    ax.plot([0, 1], [0, 1], "--", color="gray", label="perfect")
+    ax.plot(centers, accs, "o-", label="model")
+    ax.set_xlabel("predicted probability (bin center)")
+    ax.set_ylabel("observed active fraction")
+    ax.set_title(f"Tox21 {cfg['endpoint']['assay_id']} — test scaffolds")
+    ax.legend()
+    fig.tight_layout()
+    Path(cal_out).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(cal_out, dpi=150)
+    plt.close(fig)
+
+    Path(metrics_out).parent.mkdir(parents=True, exist_ok=True)
+    with open(metrics_out, "w") as f:
+        json.dump(metrics, f, indent=2)
+    print(json.dumps(metrics, indent=2))
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("model")
-    parser.add_argument("data")
+    parser.add_argument("splits")
+    parser.add_argument("features")
     parser.add_argument("--metrics", required=True)
     parser.add_argument("--calibration", required=True)
     args = parser.parse_args()
-    evaluate(args.model, args.data, args.metrics, args.calibration)
+    evaluate(args.model, args.splits, args.features, args.metrics, args.calibration)
 
 
 if __name__ == "__main__":

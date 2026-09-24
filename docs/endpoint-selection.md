@@ -1,6 +1,14 @@
 # Endpoint selection
 
-TODO: pick one endpoint before implementing `data/toxcast.py`. Criteria:
+**Decision: Tox21 NR-ER** (nuclear-receptor estrogen agonism).
+
+Rationale: endocrine disruption is a flagship NAMs use case — in-vitro and
+in-silico estrogenicity screening is actively argued to displace animal
+uterotrophic assays. Tox21 labels are fully public (MoleculeNet mirror),
+the ~9% active rate exercises imbalance-aware evaluation, and the dataset
+(~6k labeled compounds) is small enough to iterate locally.
+
+Original criteria, for the record:
 
 - **Decision relevance**: endpoint maps to a real preclinical safety decision
   (DILI > hERG > ER agonism roughly, for pharma relevance)
@@ -18,4 +26,5 @@ TODO: pick one endpoint before implementing `data/toxcast.py`. Criteria:
 | Tox21 ER/AR agonism | Tox21 | TODO | clean NAMs story, large screen |
 | ToxCast assay AC50 | invitrodb | TODO | most labels, assay-specific |
 
-Decision: **TODO**
+Decision: **Tox21 NR-ER** (implemented; revisit if expanding to a second
+endpoint — hERG or a ToxCast AC50 are the natural next candidates)
