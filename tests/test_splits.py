@@ -40,3 +40,8 @@ def test_deterministic_given_seed():
 def test_rejects_missing_scaffold_column():
     with pytest.raises(ValueError, match="scaffold"):
         scaffold_split(pd.DataFrame({"smiles": ["CC"]}))
+
+
+def test_zero_frac_valid_yields_no_valid_partition():
+    out = scaffold_split(_df(), frac_valid=0.0)
+    assert "valid" not in set(out["split"].unique())
