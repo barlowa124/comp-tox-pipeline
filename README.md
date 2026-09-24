@@ -75,6 +75,23 @@ Two findings worth reporting rather than smoothing over:
   model-dependent, not a property of the dataset alone; any AD claim here
   is conditioned on the model it was measured with.
 
+### Second endpoint: Tox21 NR-AR (androgen receptor agonism)
+
+Same pipeline, same protocol — `endpoint.assay_id` switched to `NR-AR`
+(7,265 labeled compounds, 4.3% actives). `results/metrics_NR-AR.json`:
+
+| Model | AUROC | In-domain AUROC | Out-domain AUROC |
+|---|---:|---:|---:|
+| Logistic regression | 0.728 | 0.920 | 0.702 |
+| Random forest | 0.830 | 0.908 | 0.816 |
+| GIN graph network | 0.831 | 0.816 | 0.834 |
+
+The AD pattern does **not** invert on NR-AR — all three models degrade
+out-of-domain. So the NR-ER inversion is a property of that
+endpoint×model pairing, not a pipeline artifact; the honest claim
+narrows to "AD transferability must be validated per model and per
+endpoint."
+
 Overall AUROC is modest — the honest scaffold-split result. Random-split
 numbers for this endpoint are typically ~0.8+ and misleading.
 

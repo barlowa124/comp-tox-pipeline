@@ -43,6 +43,18 @@ def canonicalize(smiles: str) -> tuple[str | None, str | None]:
 def standardize(in_path: str, out_path: str) -> None:
     df = pd.read_parquet(in_path)
 
+    if "assay_id" in df.columns:
+        import yaml
+
+        with open("config/config.yaml") as f:
+            expected = yaml.safe_load(f)["endpoint"]["assay_id"]
+        assays = set(df["assay_id"].unique())
+        if assays != {expected}:
+            raise ValueError(
+                f"input assays {sorted(assays)} do not match config endpoint "
+                f"{expected!r} — stale intermediate; regenerate raw data"
+            )
+
     canon = df["smiles"].map(canonicalize)
     df["canonical_smiles"] = [c for c, _ in canon]
     df["scaffold_id"] = [s for _, s in canon]

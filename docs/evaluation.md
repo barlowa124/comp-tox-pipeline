@@ -20,6 +20,13 @@
   Logreg: AUROC 0.751 in / 0.619 out. **RF and GNN invert**: RF 0.701 in /
   0.733 out; GNN 0.507 in / 0.704 out — the AD flag is model-dependent and
   cannot be reported model-agnostically.
+- **Second endpoint (NR-AR, `results/metrics_NR-AR.json`):** logreg 0.728,
+  RF 0.830, GNN 0.831 AUROC; AD does *not* invert (in > out for all three).
+  AD transferability must be validated per model × endpoint.
+- Provenance guard: `data/raw/assay_<ASSAY>.parquet` filenames include the
+  endpoint so a config change cannot silently reuse stale labels (found
+  and fixed during the NR-AR run — an earlier attempt had re-evaluated
+  NR-ER data stamped as NR-AR).
 
 ## Known caveats
 

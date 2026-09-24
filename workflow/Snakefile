@@ -3,6 +3,7 @@ import sys
 configfile: "config/config.yaml"
 
 PY = sys.executable  # the interpreter running snakemake; keeps the DAG on the project venv
+ASSAY = config["endpoint"]["assay_id"]
 
 
 rule all:
@@ -13,14 +14,14 @@ rule all:
 
 rule download:
     output:
-        "data/raw/assay.parquet",
+        f"data/raw/assay_{ASSAY}.parquet",
     shell:
         "{PY} -m comp_tox.data.toxcast --output {output}"
 
 
 rule standardize:
     input:
-        "data/raw/assay.parquet",
+        f"data/raw/assay_{ASSAY}.parquet",
     output:
         "data/processed/compounds.parquet",
     shell:
