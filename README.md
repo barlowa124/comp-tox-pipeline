@@ -38,10 +38,11 @@ See `docs/endpoint-selection.md`.
 ## Quickstart
 
 ```bash
-pip install -e .[dev]
+pip install -e .[dev]        # needs Python >= 3.10; uv recommended
 snakemake --cores 4          # runs the full DAG (stubbed)
 pytest tests/
-snakemake -n               # dry-run DAG check
+snakemake -n                 # dry-run DAG check
+# or: make install / test / dag / run
 ```
 
 ## Pipeline
@@ -74,5 +75,5 @@ src/comp_tox/
   models/      training
   eval/        scaffold split, calibration, conformal, applicability domain
 tests/
-docs/
+docs/          endpoint selection, data sources, evaluation notes
 ```

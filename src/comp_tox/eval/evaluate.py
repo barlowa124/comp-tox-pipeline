@@ -1,14 +1,12 @@
 """Evaluate on held-out scaffolds and produce the report artifacts.
 
-TODO: implement
-
-Metrics (test split only):
+Orchestrates the eval submodules (test split only):
+    - eval.calibration: ECE + reliability curve -> results/calibration.png
+    - eval.conformal: split-conformal coverage at 90%, calibration on
+      validation scaffolds
+    - eval.applicability: Tanimoto NN distance to train set; report metrics
+      conditioned on in/out of domain
     - AUROC, AUPRC (report both; imbalance makes AUPRC the honest one)
-    - Expected calibration error + reliability curve (results/calibration.png)
-    - Conformal coverage at 90%: split-conformal using validation scaffolds
-      as the calibration set
-    - Applicability domain: Tanimoto nearest-neighbor distance of each test
-      compound to the train set; report metrics conditioned on in/out of domain
 
 All metrics get bootstrap CIs over scaffold groups (not over rows).
 
