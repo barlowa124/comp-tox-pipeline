@@ -56,7 +56,7 @@ See `workflow/Snakefile`.
 ## Results
 
 Scaffold-split evaluation, where no scaffold is shared between partitions,
-is the honest estimate of prospective performance on new chemotypes. 610 test compounds,
+is the estimate of prospective performance on new chemotypes. 610 test compounds,
 55 actives (9.0%). Bootstrap CIs over scaffold groups:
 
 | Model | AUROC (95% CI) | AUPRC (95% CI) | ECE | Conformal @90% | In-domain AUROC | Out-domain AUROC |
@@ -100,7 +100,7 @@ regularized MLP does not. That is a model×endpoint
 interaction, and a reminder that "ran fine on the other
 endpoint" is not evidence of robustness.
 
-Overall AUROC is modest, the honest scaffold-split result. Random-split
+Overall AUROC is modest, and it is the scaffold-split result. Random-split
 numbers for this endpoint are typically ~0.8+ and misleading.
 
 Artifacts: `results/metrics.json`, `results/calibration.png`

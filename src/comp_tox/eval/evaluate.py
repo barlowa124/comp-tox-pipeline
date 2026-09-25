@@ -6,7 +6,7 @@ Orchestrates the eval submodules (test split only):
       validation split
     - eval.applicability: Tanimoto NN distance to train set; metrics reported
       conditioned on in/out of domain
-    - AUROC, AUPRC (report both; imbalance makes AUPRC the honest one)
+    - AUROC, AUPRC (report both; imbalance makes AUPRC the informative one)
 
 All metrics get bootstrap CIs over scaffold groups (not over rows).
 """

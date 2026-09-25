@@ -26,7 +26,7 @@ from sklearn.linear_model import LogisticRegression
 from comp_tox.util import load_config
 
 MODEL_REGISTRY = {
-    # lbfgs is deterministic; random_state recorded anyway for honesty
+    # lbfgs is deterministic; random_state recorded anyway for reproducibility
     "logistic_regression": lambda seed: LogisticRegression(
         max_iter=2000, class_weight="balanced", solver="lbfgs",
         random_state=seed,

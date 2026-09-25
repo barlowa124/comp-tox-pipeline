@@ -1,6 +1,6 @@
 """Scaffold-aware train/validation/test splitting.
 
-Structural (scaffold) splitting is the honest evaluation for molecular ML:
+Structural (scaffold) splitting is the prospective evaluation for molecular ML:
 random splits overestimate prospective performance because near-identical
 analogs land in both train and test. Rows sharing a Bemis-Murcko scaffold
 (here, a precomputed ``scaffold_id``) are always kept in the same partition.

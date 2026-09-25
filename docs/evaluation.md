@@ -30,8 +30,8 @@
 
 ## Known caveats
 
-- The model is a deliberately simple baseline; the evaluation scaffold is
-  the contribution. AUROC 0.64 is honest, not impressive.
+- The model is a simple baseline; the evaluation scaffold is
+  the contribution. AUROC 0.64 is the measured scaffold-split number.
 - Test prevalence (9.0%) is higher than train due to scaffold-group sorting;
   prevalence differences across partitions complicate AUPRC interpretation.
 - Conformal coverage is marginal, not conditional. Per-scaffold coverage

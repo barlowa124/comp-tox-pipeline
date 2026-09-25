@@ -1,4 +1,4 @@
-"""JAX/Flax port of the PyTorch GIN baseline. Verified, not just claimed.
+"""JAX/Flax port of the PyTorch GIN baseline, verified to numerical parity.
 
 The Flax module replicates torch_geometric's GINConv math exactly:
     h_i' = MLP(x_i + sum_{j in N(i)} x_j)
