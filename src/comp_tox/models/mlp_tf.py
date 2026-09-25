@@ -1,8 +1,8 @@
 """TensorFlow/Keras MLP baseline on Morgan fingerprints.
 
 Same scaffold split, same Platt-on-validation calibration, same eval path
-as the sklearn baselines and the PyTorch GNN — this head exists to keep the
-third framework honest (PyTorch GNN, JAX/Flax parity port, TF/Keras here),
+as the sklearn baselines and the PyTorch GNN. This head exists to exercise the
+third framework (PyTorch GNN, JAX/Flax parity port, TF/Keras here),
 not to claim a better model class.
 
 `_KerasMlp` is an sklearn-style adapter storing only the dense-layer spec
@@ -90,7 +90,7 @@ def train_mlp_tf(X, y, seed: int, epochs: int = 30, batch_size: int = 128):
     Determinism: `set_random_seed` covers weight init, dropout, and shuffle
     order. TF ops are deterministic at this scale on a given build, but
     unlike the lbfgs baseline this is seed-level reproducibility, not
-    bit-level — documented rather than hidden.
+    bit-level.
     """
     if epochs < 1:
         raise ValueError(f"epochs must be >= 1, got {epochs}")

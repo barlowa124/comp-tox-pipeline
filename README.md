@@ -8,7 +8,7 @@ structure, built on public data.
 standardize → features → scaffold split → train → evaluate on real Tox21 data.
 Four models compared on identical splits (logistic regression and random
 forest on Morgan fingerprints, a GIN graph network, and a TensorFlow/Keras
-MLP — all Platt-calibrated on validation scaffolds). The evaluation rigor
+MLP, all Platt-calibrated on validation scaffolds). The evaluation rigor
 is the point.
 
 ## Problem
@@ -92,12 +92,12 @@ Same pipeline, same protocol, with `endpoint.assay_id` switched to `NR-AR`
 The AD pattern does **not** invert on NR-AR for the first three models.
 But the Keras MLP is a different, worse failure on this endpoint: NR-AR
 has 4.8% train prevalence (272 actives vs 659 on NR-ER) and the MLP
-memorizes — train AUROC reaches 1.000 within 10 epochs while validation
+memorizes. Train AUROC reaches 1.000 within 10 epochs while validation
 degrades *below chance*. Early stopping on val AUROC selects 0.641-valid,
 but that checkpoint still anti-ranks the held-out scaffolds (0.344, CI
-0.19–0.50). The sklearn heads and GIN degrade gracefully; the lightly-
-regularized MLP does not. Reported, not tuned away — an honest
-model×endpoint interaction, and a reminder that "ran fine on the other
+0.19–0.50). The sklearn heads and GIN degrade gracefully. The lightly-
+regularized MLP does not. That is a model×endpoint
+interaction, and a reminder that "ran fine on the other
 endpoint" is not evidence of robustness.
 
 Overall AUROC is modest, the honest scaffold-split result. Random-split
@@ -123,7 +123,7 @@ Artifacts: `results/metrics.json`, `results/calibration.png`
   same fingerprints and splits, wrapped in a picklable sklearn adapter so
   it flows through the identical Platt-calibration, conformal, and
   applicability-domain path. PyTorch, JAX, and TF are all exercised on
-  this one task — same data, same eval, three frameworks.
+  this one task: same data, same eval, three frameworks.
 
 ## Limitations
 
