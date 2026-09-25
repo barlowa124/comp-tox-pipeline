@@ -6,9 +6,10 @@ structure, built on public data.
 
 **Status: working baseline.** End-to-end Snakemake DAG runs download →
 standardize → features → scaffold split → train → evaluate on real Tox21 data.
-Three models compared on identical splits (logistic regression and random
-forest on Morgan fingerprints, a GIN graph network, all Platt-calibrated on
-validation scaffolds). The evaluation rigor is the point.
+Four models compared on identical splits (logistic regression and random
+forest on Morgan fingerprints, a GIN graph network, and a TensorFlow/Keras
+MLP — all Platt-calibrated on validation scaffolds). The evaluation rigor
+is the point.
 
 ## Problem
 
@@ -63,6 +64,7 @@ is the honest estimate of prospective performance on new chemotypes. 610 test co
 | Logistic regression (fingerprints) | 0.644 (0.574–0.719) | 0.244 (0.159–0.336) | 0.033 | 0.930 | **0.751** | 0.619 |
 | Random forest (fingerprints) | 0.726 (0.667–0.787) | 0.274 (0.199–0.378) | 0.044 | 0.931 | 0.701 | 0.733 |
 | GIN graph network | 0.666 (see metrics.json) | 0.249 | 0.040 | 0.934 | 0.507 | 0.704 |
+| Keras MLP (fingerprints) | 0.679 (0.620–0.748) | **0.314** (0.213–0.415) | 0.053 | 0.928 | 0.823 | 0.648 |
 
 Two findings worth reporting plainly:
 
@@ -111,6 +113,11 @@ Artifacts: `results/metrics.json`, `results/calibration.png`
   evaluation. The code path is identical to multi-GPU (nccl). Only the
   backend and scale differ. Verified on CPU. Multi-GPU scaling is
   untested and labeled as such.
+- `src/comp_tox/models/mlp_tf.py` is a TensorFlow/Keras MLP head on the
+  same fingerprints and splits, wrapped in a picklable sklearn adapter so
+  it flows through the identical Platt-calibration, conformal, and
+  applicability-domain path. PyTorch, JAX, and TF are all exercised on
+  this one task — same data, same eval, three frameworks.
 
 ## Limitations
 

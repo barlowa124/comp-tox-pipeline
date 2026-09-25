@@ -61,10 +61,21 @@ def train(
             graphs = torch.load(graphs_path, weights_only=False)
             models[name] = train_gnn(graphs, df, tr, va, seed)
             inputs[name] = "graphs"
+        elif name == "mlp_tf":
+            from comp_tox.models.mlp_tf import train_mlp_tf
+
+            base = train_mlp_tf(X[tr], y[tr], seed)
+            calibrated = CalibratedClassifierCV(
+                FrozenEstimator(base), method="sigmoid"
+            )
+            calibrated.fit(X[va], y[va])
+            models[name] = calibrated
+            inputs[name] = "npz"
         else:
             if name not in MODEL_REGISTRY:
                 raise ValueError(
-                    f"unknown model {name!r} (registry: {sorted(MODEL_REGISTRY)}, 'gnn')"
+                    f"unknown model {name!r} (registry: {sorted(MODEL_REGISTRY)},"
+                    " 'gnn', 'mlp_tf')"
                 )
             base = MODEL_REGISTRY[name](seed)
             base.fit(X[tr], y[tr])

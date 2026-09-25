@@ -1,5 +1,6 @@
 {
   "endpoint": "NR-ER",
+  "primary_model": "logistic_regression",
   "counts": {
     "train": 4872,
     "valid": 609,
@@ -114,6 +115,42 @@
         },
         "conformal_coverage_in_domain": 0.926605504587156,
         "conformal_coverage_out_domain": 0.936127744510978
+      }
+    },
+    "mlp_tf": {
+      "auroc": 0.6787551187551187,
+      "auprc": 0.3135887888160853,
+      "auroc_ci95": [
+        0.6199536155839345,
+        0.7477849467439417
+      ],
+      "auprc_ci95": [
+        0.2134993500635,
+        0.4154174146689032
+      ],
+      "n_boot_used": 1000,
+      "ece": 0.05278688524590166,
+      "conformal": {
+        "alpha": 0.1,
+        "qhat": 0.7838691397903325,
+        "coverage": 0.9278688524590164,
+        "mean_set_size": 1.0278688524590165,
+        "singleton_fraction": 0.9721311475409836
+      },
+      "applicability_domain": {
+        "threshold": 0.3,
+        "in_domain_fraction": 0.17868852459016393,
+        "median_nn_distance": 0.5025773195876289,
+        "in_domain": {
+          "auroc": 0.8227272727272728,
+          "auprc": 0.47373610480571426
+        },
+        "out_domain": {
+          "auroc": 0.6482699805068226,
+          "auprc": 0.2987226271251591
+        },
+        "conformal_coverage_in_domain": 0.9357798165137615,
+        "conformal_coverage_out_domain": 0.9261477045908184
       }
     }
   },

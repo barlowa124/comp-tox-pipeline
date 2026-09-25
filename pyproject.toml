@@ -19,6 +19,7 @@ dependencies = [
     "rdkit>=2024.3",
     "torch",
     "torch_geometric",
+    "tensorflow>=2.20",
 ]
 
 [project.optional-dependencies]
