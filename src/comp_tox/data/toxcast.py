@@ -25,8 +25,13 @@ RAW_ARCHIVE = Path("data/raw/tox21.csv.gz")
 def download(url: str, dest: Path = RAW_ARCHIVE) -> Path:
     dest.parent.mkdir(parents=True, exist_ok=True)
     if not dest.exists():
-        with urllib.request.urlopen(url, timeout=300) as resp, open(dest, "wb") as out:
-            shutil.copyfileobj(resp, out)
+        tmp = dest.with_name(dest.name + ".part")
+        try:
+            with urllib.request.urlopen(url, timeout=300) as resp, open(tmp, "wb") as out:
+                shutil.copyfileobj(resp, out)
+            tmp.replace(dest)
+        finally:
+            tmp.unlink(missing_ok=True)
     return dest
 
 

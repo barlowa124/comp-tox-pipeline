@@ -73,13 +73,20 @@ class GNNWrapper:
 def train_gnn(
     graphs, df, tr_mask, va_mask, seed: int, epochs: int = 20
 ) -> GNNWrapper:
+    if epochs < 1:
+        raise ValueError(f"epochs must be >= 1, got {epochs}")
     torch.manual_seed(seed)
     train_graphs = [graphs[i] for i in np.where(tr_mask)[0]]
     y_tr = df["label"].to_numpy()[tr_mask].astype(np.float32)
+    n_pos = float(y_tr.sum())
+    if not len(y_tr) or n_pos == 0 or n_pos == len(y_tr):
+        raise ValueError(
+            f"train split degenerate ({int(n_pos)} of {len(y_tr)} active)"
+        )
 
     net = GINNet()
     opt = torch.optim.Adam(net.parameters(), lr=1e-3)
-    pos_weight = torch.tensor([(len(y_tr) - y_tr.sum()) / max(y_tr.sum(), 1)])
+    pos_weight = torch.tensor([(len(y_tr) - n_pos) / n_pos])
     loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     loader = DataLoader(
@@ -107,6 +114,11 @@ def train_gnn(
     wrapper = GNNWrapper(net, platt=None)
     valid_graphs = [graphs[i] for i in np.where(va_mask)[0]]
     y_va = df["label"].to_numpy()[va_mask]
+    if len(np.unique(y_va)) < 2:
+        raise ValueError(
+            f"valid split has {len(np.unique(y_va))} class(es); "
+            "Platt calibration needs both (check split.frac_valid)"
+        )
     platt = LogisticRegression(max_iter=1000)
     platt.fit(wrapper._logits(valid_graphs).reshape(-1, 1), y_va)
     wrapper.platt = platt
