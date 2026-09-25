@@ -87,12 +87,18 @@ Same pipeline, same protocol, with `endpoint.assay_id` switched to `NR-AR`
 | Logistic regression | 0.728 | 0.920 | 0.702 |
 | Random forest | 0.830 | 0.908 | 0.816 |
 | GIN graph network | 0.831 | 0.816 | 0.834 |
+| Keras MLP | **0.344** | 0.225 | 0.368 |
 
-The AD pattern does **not** invert on NR-AR. All three models degrade
-out-of-domain. So the NR-ER inversion is a property of that
-endpoint×model pairing, not a pipeline artifact. The claim
-narrows to "AD transferability must be validated per model and per
-endpoint."
+The AD pattern does **not** invert on NR-AR for the first three models.
+But the Keras MLP is a different, worse failure on this endpoint: NR-AR
+has 4.8% train prevalence (272 actives vs 659 on NR-ER) and the MLP
+memorizes — train AUROC reaches 1.000 within 10 epochs while validation
+degrades *below chance*. Early stopping on val AUROC selects 0.641-valid,
+but that checkpoint still anti-ranks the held-out scaffolds (0.344, CI
+0.19–0.50). The sklearn heads and GIN degrade gracefully; the lightly-
+regularized MLP does not. Reported, not tuned away — an honest
+model×endpoint interaction, and a reminder that "ran fine on the other
+endpoint" is not evidence of robustness.
 
 Overall AUROC is modest, the honest scaffold-split result. Random-split
 numbers for this endpoint are typically ~0.8+ and misleading.
