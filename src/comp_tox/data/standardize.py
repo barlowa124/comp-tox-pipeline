@@ -24,6 +24,8 @@ RDLogger.DisableLog("rdApp.*")
 
 
 def canonicalize(smiles: str) -> tuple[str | None, str | None]:
+    if not smiles or not isinstance(smiles, str):
+        return None, None  # NaN/None input is unparseable, not a crash
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         return None, None
