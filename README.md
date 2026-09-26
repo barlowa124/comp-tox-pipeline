@@ -96,7 +96,8 @@ GNN** (0.816 in-domain vs 0.834 out). The MLP's in/out numbers are part
 of its collapse, not evidence either way. NR-AR
 has 4.8% train prevalence (272 actives vs 659 on NR-ER) and the MLP
 memorizes. Train AUROC reaches 1.000 within 10 epochs while validation
-degrades *below chance*. Early stopping on val AUROC selects 0.641-valid,
+degrades *below chance* (training curves from the run log; per-epoch
+history is not committed). Early stopping on val AUROC selects 0.641-valid,
 but that checkpoint still anti-ranks the held-out scaffolds (0.344, CI
 0.19–0.50). The sklearn heads and GIN degrade gracefully. The lightly-
 regularized MLP does not. That is a model×endpoint
