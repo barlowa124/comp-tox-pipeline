@@ -25,7 +25,9 @@ calibrated uncertainty instead of point predictions.
 **Tox21 NR-ER** (nuclear-receptor estrogen agonism). Chosen because endocrine
 disruption is a flagship NAMs use case (in-vitro/in-silico estrogenicity is
 actively argued to displace animal uterotrophic assays), labels are fully
-public, and the ~9% active rate exercises the imbalance-aware evaluation.
+public, and the ~13% active rate (9.0% in the held-out test partition,
+per-split counts committed in `results/metrics.json`) exercises the
+imbalance-aware evaluation.
 Alternatives considered in `docs/endpoint-selection.md`.
 
 ## Data

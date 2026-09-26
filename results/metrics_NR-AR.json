@@ -6,7 +6,10 @@
     "valid": 711,
     "test": 713,
     "test_actives": 17,
-    "test_prevalence": 0.023842917251051893
+    "test_prevalence": 0.023842917251051893,
+    "train_actives": 272,
+    "train_prevalence": 0.04776958201615736,
+    "valid_actives": 15
   },
   "models": {
     "logistic_regression": {
