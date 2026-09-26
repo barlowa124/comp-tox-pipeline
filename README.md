@@ -80,7 +80,7 @@ Two findings worth reporting plainly:
 ### Second endpoint: Tox21 NR-AR (androgen receptor agonism)
 
 Same pipeline, same protocol, with `endpoint.assay_id` switched to `NR-AR`
-(7,265 labeled compounds, 4.3% actives). `results/metrics_NR-AR.json`:
+(7,118 compounds after standardization; 2.4% actives in test). `results/metrics_NR-AR.json`:
 
 | Model | AUROC | In-domain AUROC | Out-domain AUROC |
 |---|---:|---:|---:|
@@ -89,8 +89,9 @@ Same pipeline, same protocol, with `endpoint.assay_id` switched to `NR-AR`
 | GIN graph network | 0.831 | 0.816 | 0.834 |
 | Keras MLP | **0.344** | 0.225 | 0.368 |
 
-The AD pattern does **not** invert on NR-AR for the first three models.
-But the Keras MLP is a different, worse failure on this endpoint: NR-AR
+On NR-AR the AD direction holds for logreg and RF but **inverts for the
+GNN** (0.816 in-domain vs 0.834 out). The MLP's in/out numbers are part
+of its collapse, not evidence either way. NR-AR
 has 4.8% train prevalence (272 actives vs 659 on NR-ER) and the MLP
 memorizes. Train AUROC reaches 1.000 within 10 epochs while validation
 degrades *below chance*. Early stopping on val AUROC selects 0.641-valid,
