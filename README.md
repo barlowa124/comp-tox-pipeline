@@ -59,14 +59,17 @@ See `workflow/Snakefile`.
 
 Scaffold-split evaluation, where no scaffold is shared between partitions,
 is the estimate of prospective performance on new chemotypes. 610 test compounds,
-55 actives (9.0%). Bootstrap CIs over scaffold groups:
+55 actives (9.0%). The NR-ER point estimates below are retained from the
+original run. Its confidence intervals are withdrawn: the previous bootstrap
+collapsed repeated scaffold draws, and the original checkpoint or predictions
+are unavailable for recomputation. Corrected code preserves draw multiplicity.
 
-| Model | AUROC (95% CI) | AUPRC (95% CI) | ECE | Conformal @90% | In-domain AUROC | Out-domain AUROC |
+| Model | AUROC | AUPRC | ECE | Conformal @90% | In-domain AUROC | Out-domain AUROC |
 |---|---|---|---|---|---|---|
-| Logistic regression (fingerprints) | 0.644 (0.574–0.719) | 0.244 (0.159–0.336) | 0.033 | 0.930 | **0.751** | 0.619 |
-| Random forest (fingerprints) | 0.726 (0.667–0.787) | 0.274 (0.199–0.378) | 0.044 | 0.931 | 0.701 | 0.733 |
-| GIN graph network | 0.666 (see metrics.json) | 0.249 | 0.040 | 0.934 | 0.507 | 0.704 |
-| Keras MLP (fingerprints) | 0.679 (0.620–0.748) | **0.314** (0.213–0.415) | 0.053 | 0.928 | 0.823 | 0.648 |
+| Logistic regression (fingerprints) | 0.644 | 0.244 | 0.033 | 0.930 | **0.751** | 0.619 |
+| Random forest (fingerprints) | 0.726 | 0.274 | 0.044 | 0.931 | 0.701 | 0.733 |
+| GIN graph network | 0.666 | 0.249 | 0.040 | 0.934 | 0.507 | 0.704 |
+| Keras MLP (fingerprints) | 0.679 | **0.314** | 0.053 | 0.928 | 0.823 | 0.648 |
 
 Two findings worth reporting plainly:
 
@@ -84,6 +87,12 @@ Two findings worth reporting plainly:
 Same pipeline, same protocol, with `endpoint.assay_id` switched to `NR-AR`
 (7,118 compounds after standardization; 2.4% actives in test). `results/metrics_NR-AR.json`:
 
+NR-AR confidence intervals were corrected using the retained checkpoint after
+reproducing every model's published AUROC and AUPRC. The compact held-out
+prediction capture, `results/metrics_NR-AR_predictions.parquet`, is hash-bound
+in the metrics file. A regression test replays the corrected intervals without
+loading a model or downloading data.
+
 | Model | AUROC | In-domain AUROC | Out-domain AUROC |
 |---|---:|---:|---:|
 | Logistic regression | 0.728 | 0.920 | 0.702 |
@@ -97,10 +106,10 @@ of its collapse, not evidence either way. NR-AR
 has 4.8% train prevalence (272 actives vs 659 on NR-ER) and the MLP
 memorizes. Train AUROC reaches 1.000 within 10 epochs while validation
 degrades *below chance* (training curves from the run log; per-epoch
-history is not committed). Early stopping on val AUROC selects 0.641-valid,
-but that checkpoint still anti-ranks the held-out scaffolds (0.344, CI
-0.19–0.50). The sklearn heads and GIN degrade gracefully. The lightly-
-regularized MLP does not. That is a model×endpoint
+history is not committed). Early stopping on val AUROC selects 0.641-valid.
+The held-out point estimate is below chance (0.344), but the corrected 95%
+interval, 0.17 to 0.54, includes 0.5. The sklearn heads and GIN degrade
+gracefully. The lightly-regularized MLP does not. That is a model×endpoint
 interaction, and a reminder that "ran fine on the other
 endpoint" is not evidence of robustness.
 

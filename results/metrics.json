@@ -1,5 +1,9 @@
 {
   "endpoint": "NR-ER",
+  "bootstrap": {
+    "status": "withdrawn",
+    "reason": "The original sampler discarded repeated scaffold draws. Original NR-ER checkpoint and test predictions are unavailable, so corrected intervals cannot be recovered for this run. Point estimates are retained from the original artifact."
+  },
   "primary_model": "logistic_regression",
   "counts": {
     "train": 4872,
@@ -15,15 +19,9 @@
     "logistic_regression": {
       "auroc": 0.6437018837018836,
       "auprc": 0.24447370523955186,
-      "auroc_ci95": [
-        0.5740357633190051,
-        0.7192325937383669
-      ],
-      "auprc_ci95": [
-        0.15918125538222724,
-        0.33612115315470753
-      ],
-      "n_boot_used": 1000,
+      "auroc_ci95": [null, null],
+      "auprc_ci95": [null, null],
+      "n_boot_used": 0,
       "ece": 0.03278688524590165,
       "conformal": {
         "alpha": 0.1,
@@ -51,15 +49,9 @@
     "random_forest": {
       "auroc": 0.7261261261261261,
       "auprc": 0.27399846871754974,
-      "auroc_ci95": [
-        0.6670280758377976,
-        0.7872025141278564
-      ],
-      "auprc_ci95": [
-        0.19890419443410526,
-        0.37785634379353006
-      ],
-      "n_boot_used": 1000,
+      "auroc_ci95": [null, null],
+      "auprc_ci95": [null, null],
+      "n_boot_used": 0,
       "ece": 0.044480874316939895,
       "conformal": {
         "alpha": 0.1,
@@ -87,15 +79,9 @@
     "gnn": {
       "auroc": 0.6656511056511056,
       "auprc": 0.2487100767515471,
-      "auroc_ci95": [
-        0.5950407658875347,
-        0.7429245564913658
-      ],
-      "auprc_ci95": [
-        0.17260323983699485,
-        0.3442904917341931
-      ],
-      "n_boot_used": 1000,
+      "auroc_ci95": [null, null],
+      "auprc_ci95": [null, null],
+      "n_boot_used": 0,
       "ece": 0.040327868852459016,
       "conformal": {
         "alpha": 0.1,
@@ -123,15 +109,9 @@
     "mlp_tf": {
       "auroc": 0.6787551187551187,
       "auprc": 0.3135887888160853,
-      "auroc_ci95": [
-        0.6199536155839345,
-        0.7477849467439417
-      ],
-      "auprc_ci95": [
-        0.2134993500635,
-        0.4154174146689032
-      ],
-      "n_boot_used": 1000,
+      "auroc_ci95": [null, null],
+      "auprc_ci95": [null, null],
+      "n_boot_used": 0,
       "ece": 0.05278688524590166,
       "conformal": {
         "alpha": 0.1,
@@ -159,15 +139,9 @@
   },
   "auroc": 0.6437018837018836,
   "auprc": 0.24447370523955186,
-  "auroc_ci95": [
-    0.5740357633190051,
-    0.7192325937383669
-  ],
-  "auprc_ci95": [
-    0.15918125538222724,
-    0.33612115315470753
-  ],
-  "n_boot_used": 1000,
+  "auroc_ci95": [null, null],
+  "auprc_ci95": [null, null],
+  "n_boot_used": 0,
   "ece": 0.03278688524590165,
   "conformal": {
     "alpha": 0.1,
