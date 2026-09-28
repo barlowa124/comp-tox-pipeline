@@ -13,6 +13,8 @@ from __future__ import annotations
 import argparse
 import shutil
 import urllib.request
+
+DOWNLOAD_TIMEOUT_S = 300
 from pathlib import Path
 
 import pandas as pd
@@ -27,7 +29,7 @@ def download(url: str, dest: Path = RAW_ARCHIVE) -> Path:
     if not dest.exists():
         tmp = dest.with_name(dest.name + ".part")
         try:
-            with urllib.request.urlopen(url, timeout=300) as resp, open(tmp, "wb") as out:
+            with urllib.request.urlopen(url, timeout=DOWNLOAD_TIMEOUT_S) as resp, open(tmp, "wb") as out:
                 shutil.copyfileobj(resp, out)
             tmp.replace(dest)
         finally:
