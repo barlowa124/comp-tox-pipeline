@@ -135,7 +135,7 @@ Artifacts: `results/metrics.json`, `results/calibration.png`
 - `src/comp_tox/models/mlp_tf.py` is a TensorFlow/Keras MLP head on the
   same fingerprints and splits, wrapped in a picklable sklearn adapter so
   it flows through the identical Platt-calibration, conformal, and
-  applicability-domain path. PyTorch, JAX, and TF are all exercised on
+  applicability-domain path. PyTorch, JAX and TF are all exercised on
   this one task: same data, same eval, three frameworks.
 
 ## Limitations
@@ -143,7 +143,7 @@ Artifacts: `results/metrics.json`, `results/calibration.png`
 - Predictions are research-grade, not regulatory-grade. No GxP, validation, or
   safety claims are made or implied.
 - Baseline model only. The contribution is the evaluation scaffold, not
-  state-of-the-art accuracy. Next step: RF/GP/GNN comparison on the same splits.
+  an accuracy record. Next step: RF/GP/GNN comparison on the same splits.
 - Applicability domain covers only ~18% of the test set at the current
   threshold. Most of chemical space is flagged, by design.
 - Assay labels are noisy and class-imbalanced. See `docs/evaluation.md`.

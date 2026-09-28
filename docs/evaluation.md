@@ -13,7 +13,8 @@
 - Random forest: AUROC 0.726, AUPRC 0.274,
   ECE 0.044, conformal coverage 0.931.
 - GIN (3-layer, graphs): AUROC 0.666, AUPRC 0.249, ECE 0.040, coverage 0.934.
-  Untuned architecture. The point is the comparison protocol, not the score.
+  Untuned architecture. The comparison protocol is the contribution, not
+  the score.
 - NR-ER confidence intervals are withdrawn. The previous bootstrap discarded
   repeated scaffold draws. The corrected sampler preserves multiplicity,
   but the original NR-ER checkpoint and predictions are unavailable.
@@ -35,12 +36,12 @@
 
 ## Known caveats
 
-- The model is a simple baseline; the evaluation scaffold is
+- The model is a simple baseline. The evaluation scaffold is
   the contribution. AUROC 0.64 is the measured scaffold-split number.
-- Test prevalence (9.0%) is higher than train due to scaffold-group sorting;
+- Test prevalence (9.0%) is higher than train due to scaffold-group sorting.
   prevalence differences across partitions complicate AUPRC interpretation.
 - Conformal coverage is marginal, not conditional. Per-scaffold coverage
-  varies; see AD-conditioned coverage in `results/metrics.json`.
+  varies. See AD-conditioned coverage in `results/metrics.json`.
 - The AD threshold (0.3) is configured, not yet calibrated on validation
   scaffolds. See TODO below.
 

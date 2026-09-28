@@ -17,14 +17,14 @@ invitrodb versions.
 ## PubChem
 
 - PUG-REST base: `https://pubchem.ncbi.nlm.nih.gov/rest/pug`
-- Tox21 summary assays have AIDs; per-compound activity calls available via
+- Tox21 summary assays have AIDs. Per-compound activity calls available via
   `assay/aid/<AID>/JSON` or bulk CSV.
-- Rate-limit politely; cache raw responses under `data/raw/`.
+- Rate-limit politely. Cache raw responses under `data/raw/`.
 
 ## ChEMBL
 
 - SQLite dump or web API (`/data/activity.json?...`).
-- Useful for hERG/DILI-adjacent bioactivity; watch unit heterogeneity
+- Useful for hERG/DILI-adjacent bioactivity. Watch unit heterogeneity
   (standard_value/standard_units) when aggregating labels.
 
 ## Label reconciliation
