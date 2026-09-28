@@ -1,6 +1,10 @@
 """Robustness battery: split integrity invariants, Tanimoto distance edges,
 calibration degenerate inputs, and canonicalization traps."""
 
+import hashlib
+import json
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -11,6 +15,65 @@ from comp_tox.eval.applicability import in_domain, nn_tanimoto_distances
 from comp_tox.eval.calibration import (expected_calibration_error,
                                        reliability_curve)
 from comp_tox.eval.splits import scaffold_split
+from comp_tox.eval.evaluate import _scaffold_bootstrap
+
+
+class TestScaffoldBootstrap:
+    def test_repeated_draws_preserve_all_group_rows(self, monkeypatch):
+        df = pd.DataFrame({
+            "scaffold_id": ["A", "A", "B", "C"],
+            "label": [0, 1, 1, 0],
+        })
+        probabilities = np.array([0.7, 0.2, 0.9, 0.1])
+        observed = []
+
+        class FixedDraw:
+            def choice(self, n, size, replace):
+                assert (n, size, replace) == (3, 3, True)
+                return np.array([0, 0, 1])
+
+        def metric(labels, scores):
+            observed.append((labels.tolist(), scores.tolist()))
+            return 0.5
+
+        monkeypatch.setattr("comp_tox.eval.evaluate.np.random.default_rng",
+                            lambda seed: FixedDraw())
+        monkeypatch.setattr("comp_tox.eval.evaluate.roc_auc_score", metric)
+        monkeypatch.setattr("comp_tox.eval.evaluate.average_precision_score", metric)
+        result = _scaffold_bootstrap(df, probabilities, n_boot=1, seed=0)
+        expected = ([0, 1, 0, 1, 1], [0.7, 0.2, 0.7, 0.2, 0.9])
+        assert observed == [expected, expected]
+        assert result["n_boot_used"] == 1
+
+    def test_single_class_has_no_valid_replicates(self):
+        df = pd.DataFrame({"scaffold_id": ["A", "B"], "label": [0, 0]})
+        result = _scaffold_bootstrap(df, np.array([0.1, 0.2]), 5, 0)
+        assert result == {"auroc_ci95": [None, None],
+                          "auprc_ci95": [None, None], "n_boot_used": 0}
+
+    def test_seed_replays_intervals(self):
+        df = pd.DataFrame({"scaffold_id": ["A", "A", "B", "B"],
+                           "label": [0, 1, 0, 1]})
+        probabilities = np.array([0.7, 0.2, 0.1, 0.9])
+        assert _scaffold_bootstrap(df, probabilities, 20, 7) == \
+            _scaffold_bootstrap(df, probabilities, 20, 7)
+
+    def test_corrected_nr_ar_intervals_replay_from_frozen_predictions(self):
+        results = Path(__file__).resolve().parents[1] / "results"
+        metrics = json.loads((results / "metrics_NR-AR.json").read_text())
+        protocol = metrics["bootstrap"]
+        path = results / protocol["predictions"]
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == protocol["predictions_sha256"]
+        frame = pd.read_parquet(path)
+        assert len(frame) == metrics["counts"]["test"]
+        assert int(frame.label.sum()) == metrics["counts"]["test_actives"]
+        for name, expected in metrics["models"].items():
+            actual = _scaffold_bootstrap(frame, frame[name].to_numpy(),
+                                         protocol["n_bootstrap"], protocol["seed"])
+            assert actual["n_boot_used"] == expected["n_boot_used"]
+            for metric in ("auroc_ci95", "auprc_ci95"):
+                assert np.allclose(actual[metric], expected[metric], rtol=0, atol=1e-12)
+                assert metrics[metric] == metrics["models"][metrics["primary_model"]][metric]
 
 
 def _df(n=200, n_scaff=50, seed=0):

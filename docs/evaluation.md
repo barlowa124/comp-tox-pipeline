@@ -8,14 +8,18 @@
 
 ## Metrics (baseline run, Morgan fingerprints + Platt calibration)
 
-- Logistic regression: AUROC 0.644 (0.574–0.719), AUPRC 0.244 (0.159–0.336),
+- Logistic regression: AUROC 0.644, AUPRC 0.244,
   ECE 0.033, conformal @90% coverage 0.930.
-- Random forest: AUROC 0.726 (0.667–0.787), AUPRC 0.274 (0.199–0.378),
+- Random forest: AUROC 0.726, AUPRC 0.274,
   ECE 0.044, conformal coverage 0.931.
 - GIN (3-layer, graphs): AUROC 0.666, AUPRC 0.249, ECE 0.040, coverage 0.934.
   Untuned architecture. The point is the comparison protocol, not the score.
-- CIs are bootstrap over scaffold groups, not rows. Reliability curve in
-  `results/calibration.png` (primary model).
+- NR-ER confidence intervals are withdrawn. The previous bootstrap discarded
+  repeated scaffold draws. The corrected sampler preserves multiplicity,
+  but the original NR-ER checkpoint and predictions are unavailable.
+  NR-AR intervals were recomputed from its retained checkpoint after checking
+  that every model's point estimates reproduce the published values.
+  Reliability curve in `results/calibration.png` (primary model).
 - Applicability domain (Tanimoto NN ≤ 0.3): 17.9% of test in-domain.
   Logreg: AUROC 0.751 in / 0.619 out. **RF and GNN invert**: RF 0.701 in /
   0.733 out; GNN 0.507 in / 0.704 out. The AD flag is model-dependent and

@@ -14,6 +14,7 @@ All metrics get bootstrap CIs over scaffold groups (not over rows).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -54,13 +55,16 @@ def _scaffold_bootstrap(
     y = df["label"].to_numpy()
     rng = np.random.default_rng(seed)
     aurocs, auprcs = [], []
+    group_rows = [np.flatnonzero(inv == i) for i in range(len(uniq))]
     for _ in range(n_boot):
+        if not group_rows:
+            break
         draw = rng.choice(len(uniq), size=len(uniq), replace=True)
-        mask = np.isin(inv, draw)
-        if len(np.unique(y[mask])) < 2:
+        rows = np.concatenate([group_rows[i] for i in draw])
+        if len(np.unique(y[rows])) < 2:
             continue
-        aurocs.append(roc_auc_score(y[mask], p[mask]))
-        auprcs.append(average_precision_score(y[mask], p[mask]))
+        aurocs.append(roc_auc_score(y[rows], p[rows]))
+        auprcs.append(average_precision_score(y[rows], p[rows]))
     if not aurocs:
         return {"auroc_ci95": [None, None], "auprc_ci95": [None, None], "n_boot_used": 0}
     return {
@@ -191,6 +195,20 @@ def evaluate(
     plt.close(fig)
 
     Path(metrics_out).parent.mkdir(parents=True, exist_ok=True)
+    predictions_path = Path(metrics_out).with_name(
+        f"{Path(metrics_out).stem}_predictions.parquet")
+    predictions = df.loc[te, ["compound_id", "scaffold_id", "label"]].reset_index(drop=True)
+    for name, probabilities in test_probs.items():
+        predictions[name] = probabilities
+    predictions.to_parquet(predictions_path, index=False)
+    metrics["bootstrap"] = {
+        "status": "computed",
+        "method": "scaffold_cluster_with_replacement",
+        "seed": seed,
+        "n_bootstrap": n_boot,
+        "predictions": predictions_path.name,
+        "predictions_sha256": hashlib.sha256(predictions_path.read_bytes()).hexdigest(),
+    }
     with open(metrics_out, "w") as f:
         json.dump(metrics, f, indent=2)
     print(json.dumps(metrics, indent=2))
