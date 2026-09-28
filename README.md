@@ -161,3 +161,7 @@ src/comp_tox/
 tests/
 docs/          endpoint selection, data sources, evaluation notes
 ```
+
+## Related work
+
+- [protein-stability-uncertainty](https://github.com/barlowa124/protein-stability-uncertainty) uses the same conformal machinery on a regression problem; both repos report where marginal coverage fails, not just the headline number.
