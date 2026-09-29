@@ -1,3 +1,7 @@
+> **This repository has moved.** Active development continues in [barlowa124/mol-ml](https://github.com/barlowa124/mol-ml) under [`comp_tox_pipeline/`](https://github.com/barlowa124/mol-ml/tree/main/comp_tox_pipeline). This repo is archived and kept for link stability.
+
+---
+
 # comp-tox-pipeline
 
 Reproducible computational toxicology pipeline predicting **Tox21 NR-ER**
