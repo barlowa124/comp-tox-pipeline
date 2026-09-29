@@ -105,7 +105,7 @@ GNN** (0.816 in-domain vs 0.834 out). The MLP's in/out numbers are part
 of its collapse, not evidence either way. NR-AR
 has 4.8% train prevalence (272 actives vs 659 on NR-ER) and the MLP
 memorizes. Train AUROC reaches 1.000 within 10 epochs while validation
-degrades *below chance* (training curves from the run log; per-epoch
+degrades *below chance* (training curves from the run log, per-epoch
 history is not committed). Early stopping on val AUROC selects 0.641-valid.
 The held-out point estimate is below chance (0.344), but the corrected 95%
 interval, 0.17 to 0.54, includes 0.5. The sklearn heads and GIN degrade
@@ -164,4 +164,4 @@ docs/          endpoint selection, data sources, evaluation notes
 
 ## Related work
 
-- [protein-stability-uncertainty](https://github.com/barlowa124/protein-stability-uncertainty) uses the same conformal machinery on a regression problem; both repos report where marginal coverage fails, not just the headline number.
+- [protein-stability-uncertainty](https://github.com/barlowa124/protein-stability-uncertainty) uses the same conformal machinery on a regression problem. Both repos report where marginal coverage fails, not just the headline number.
